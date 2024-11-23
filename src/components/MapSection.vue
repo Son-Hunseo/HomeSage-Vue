@@ -135,7 +135,6 @@ const isInfoWindowVisible = (saleId) => {
 </template>
 
 <style scoped>
-/* 스타일은 동일하게 유지 */
 .map-container {
     position: relative;
     width: 100%;
