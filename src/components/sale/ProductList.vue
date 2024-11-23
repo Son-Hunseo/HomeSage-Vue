@@ -1,4 +1,3 @@
-// ProductList.vue
 <script setup>
 import { useSaleStore } from '@/stores/sale-store'
 import { storeToRefs } from 'pinia'
@@ -6,14 +5,30 @@ import SearchBar from '@/components/SearchBar.vue'
 import SearchDetail from '@/components/SearchDetail.vue'
 import ProductCard from '@/components/sale/ProductCard.vue'
 import ProductDetail from '@/components/sale/ProductDetail.vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const saleStore = useSaleStore()
 const { sales, selectedSale } = storeToRefs(saleStore)
 const showSearchDetail = ref(false)
+const currentSort = ref('high') // 'high' 또는 'low'
+
+// 정렬된 매물 목록
+const sortedSales = computed(() => {
+    return [...sales.value].sort((a, b) => {
+        if (currentSort.value === 'high') {
+            return b.price - a.price // 가격 높은 순
+        } else {
+            return a.price - b.price // 가격 낮은 순
+        }
+    })
+})
 
 const handleSelectSale = (sale) => {
-    saleStore.setSelectedSale(sale)
+    if (selectedSale.value?.saleId === sale.saleId) {
+        saleStore.clearSelectedSale()
+    } else {
+        saleStore.setSelectedSale(sale)
+    }
 }
 
 const handleCloseDetail = () => {
@@ -23,13 +38,16 @@ const handleCloseDetail = () => {
 const toggleSearchDetail = () => {
     showSearchDetail.value = !showSearchDetail.value
 }
+
+const toggleSort = (sortType) => {
+    currentSort.value = sortType
+}
 </script>
 
 <template>
     <div class="product-list-container">
         <div class="product-list-header">
             <SearchBar @toggle-detail="toggleSearchDetail" />
-            <!-- SearchDetail을 ProductList 내부로 이동 -->
             <Transition name="slide-down">
                 <SearchDetail
                     v-if="showSearchDetail"
@@ -42,13 +60,25 @@ const toggleSearchDetail = () => {
             <div class="list-header">
                 <span class="total-count">총 {{ sales.length }}개</span>
                 <div class="sort-options">
-                    <button class="sort-btn active">추천순</button>
-                    <button class="sort-btn">최신순</button>
+                    <button
+                        class="sort-btn"
+                        :class="{ active: currentSort === 'high' }"
+                        @click="toggleSort('high')"
+                    >
+                        가격 높은순
+                    </button>
+                    <button
+                        class="sort-btn"
+                        :class="{ active: currentSort === 'low' }"
+                        @click="toggleSort('low')"
+                    >
+                        가격 낮은순
+                    </button>
                 </div>
             </div>
             <div class="cards-container">
                 <ProductCard
-                    v-for="sale in sales"
+                    v-for="sale in sortedSales"
                     :key="sale.saleId"
                     :sale="sale"
                     :isSelected="selectedSale?.saleId === sale.saleId"
@@ -57,19 +87,17 @@ const toggleSearchDetail = () => {
             </div>
         </div>
 
-        <!-- ProductDetail -->
-        <Transition name="slide">
-            <ProductDetail
-                v-if="selectedSale"
-                :sale="selectedSale"
-                @close="handleCloseDetail"
-                class="detail-section"
-            />
-        </Transition>
+        <ProductDetail
+            v-if="selectedSale"
+            :sale="selectedSale"
+            @close="handleCloseDetail"
+            class="detail-section"
+        />
     </div>
 </template>
 
 <style scoped>
+/* 기존 스타일은 그대로 유지 */
 .product-list-container {
     display: flex;
     flex-direction: column;
@@ -85,7 +113,6 @@ const toggleSearchDetail = () => {
     z-index: 2;
 }
 
-/* SearchDetail 스타일 */
 .search-detail-section {
     position: absolute;
     top: 100%;
@@ -97,7 +124,6 @@ const toggleSearchDetail = () => {
     border-top: none;
 }
 
-/* SearchDetail 애니메이션 */
 .slide-down-enter-active,
 .slide-down-leave-active {
     transition:
@@ -161,25 +187,6 @@ const toggleSearchDetail = () => {
     padding: 16px;
 }
 
-/* 스크롤바 스타일링 */
-.cards-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.cards-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.cards-container::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 3px;
-}
-
-.cards-container::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-
-/* ProductDetail 섹션 */
 .detail-section {
     position: absolute;
     top: 0;
@@ -191,14 +198,16 @@ const toggleSearchDetail = () => {
     z-index: 3;
 }
 
-/* ProductDetail 애니메이션 */
 .slide-enter-active,
 .slide-leave-active {
     transition: transform 0.3s ease;
 }
 
-.slide-enter-from,
+.slide-enter-from {
+    transform: translateX(-100%);
+}
+
 .slide-leave-to {
-    transform: translateX(100%);
+    transform: translateX(-100%);
 }
 </style>

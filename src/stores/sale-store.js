@@ -1,10 +1,6 @@
 // stores/sale-store.js
 import { ref, computed, inject } from 'vue'
 import { defineStore } from 'pinia'
-// import axios from 'axios'
-
-// axios.defaults.baseURL = 'http://localhost:8080'
-// axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 export const useSaleStore = defineStore('saleStore', () => {
     const axios = inject('axios')
