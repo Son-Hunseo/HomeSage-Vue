@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import Header from '@/components/Header.vue'
-import Calendar from '@/components/user/Calender.vue'
+import Calendar from '@/components/user/Calendar.vue'
 import PasswordChange from '@/components/user/PasswordChange.vue'
 import ReservationList from '@/components/user/ReservationList.vue'
 import FavoritesList from '@/components/user/FavoritesList.vue'

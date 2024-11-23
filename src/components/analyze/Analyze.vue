@@ -299,8 +299,8 @@ const analyzeRegistered = async () => {
 
     isAnalyzingRegistered.value = true
     try {
-        const response = await axios.post(
-            `/analyze/${activeAnalysis.value.analyzeId}/registered/analyze`,
+        const response = await axios.get(
+            `/analyze/${activeAnalysis.value.analyzeId}/registered`,
         )
         startTypingEffect(response.data.result, 'registered')
     } catch (error) {
@@ -314,8 +314,8 @@ const analyzeLedger = async () => {
 
     isAnalyzingLedger.value = true
     try {
-        const response = await axios.post(
-            `/analyze/${activeAnalysis.value.analyzeId}/ledger/analyze`,
+        const response = await axios.get(
+            `/analyze/${activeAnalysis.value.analyzeId}/ledger`,
         )
         startTypingEffect(response.data.result, 'ledger')
     } catch (error) {
