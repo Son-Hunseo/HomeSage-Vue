@@ -36,12 +36,13 @@ const formatPrice = (price) => {
 const toggleLike = async () => {
     try {
         if (!authStore.isAuthenticated) {
-            const confirmation = confirm(
-                '로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?',
-            )
-            if (confirmation) {
-                router.push('/login')
-            }
+            // const confirmation = confirm(
+            //     '로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?',
+            // )
+            // if (confirmation) {
+            //     router.push('/login')
+            // }
+            alert('로그인이 필요한 서비스입니다.')
             return
         }
 
@@ -53,12 +54,13 @@ const toggleLike = async () => {
 
 const handleReservation = async () => {
     if (!authStore.isAuthenticated) {
-        const confirmation = confirm(
-            '로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?',
-        )
-        if (confirmation) {
-            router.push('/login')
-        }
+        // const confirmation = confirm(
+        //     '로그인이 필요한 서비스입니다. 로그인 페이지로 이동하시겠습니까?',
+        // )
+        // if (confirmation) {
+        //     router.push('/login')
+        // }
+        alert('로그인이 필요한 서비스입니다.')
         return
     }
 
