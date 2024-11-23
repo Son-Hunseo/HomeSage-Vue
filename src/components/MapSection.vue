@@ -1,10 +1,8 @@
-// MapSection.vue
 <script setup>
 import { ref, watch } from 'vue'
 import { KakaoMap, KakaoMapMarker } from 'vue3-kakao-maps'
 import { useSaleStore } from '@/stores/sale-store'
 import { storeToRefs } from 'pinia'
-import ProductDetail from '@/components/sale/ProductDetail.vue'
 
 const saleStore = useSaleStore()
 const { sales, selectedSale, loading, isSearchMode } = storeToRefs(saleStore)
@@ -90,11 +88,12 @@ const onLoadKakaoMap = (mapInstance) => {
 }
 
 const handleMarkerClick = (sale) => {
-    saleStore.setSelectedSale(sale)
-}
-
-const handleCloseDetail = () => {
-    saleStore.clearSelectedSale()
+    // 이미 선택된 매물을 다시 클릭하면 선택 해제
+    if (selectedSale.value?.saleId === sale.saleId) {
+        saleStore.clearSelectedSale()
+    } else {
+        saleStore.setSelectedSale(sale)
+    }
 }
 
 const formatPrice = (price) => {
@@ -132,19 +131,11 @@ const isInfoWindowVisible = (saleId) => {
                 />
             </template>
         </KakaoMap>
-
-        <Transition name="slide">
-            <ProductDetail
-                v-if="selectedSale"
-                :sale="selectedSale"
-                @close="handleCloseDetail"
-                class="map-detail-section"
-            />
-        </Transition>
     </div>
 </template>
 
 <style scoped>
+/* 스타일은 동일하게 유지 */
 .map-container {
     position: relative;
     width: 100%;
@@ -181,15 +172,5 @@ const isInfoWindowVisible = (saleId) => {
     background: white;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-}
-
-.slide-enter-active,
-.slide-leave-active {
-    transition: transform 0.3s ease;
-}
-
-.slide-enter-from,
-.slide-leave-to {
-    transform: translateX(100%);
 }
 </style>

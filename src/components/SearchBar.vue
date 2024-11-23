@@ -14,7 +14,7 @@ const handleSearch = () => {
     })
 
     // 검색 후 키워드 초기화 (선택사항)
-    // keyword.value = '';
+    keyword.value = ''
 }
 </script>
 
@@ -23,7 +23,7 @@ const handleSearch = () => {
         <input
             v-model="keyword"
             type="text"
-            placeholder="지하철역명, 학교명, 지역 검색"
+            placeholder="지하철역명, 지역 검색"
             @keyup.enter="handleSearch"
         />
         <button class="search-btn" @click="handleSearch">검색</button>

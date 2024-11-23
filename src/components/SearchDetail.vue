@@ -130,34 +130,40 @@ const handleReset = () => {
 <style scoped>
 .search-detail {
     background: white;
-    padding: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .search-detail-content {
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 14px;
     color: #333;
+    font-weight: 600;
 }
 
 .search-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
 }
 
 select,
 input {
     flex: 1;
-    padding: 8px;
+    padding: 6px 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
+    height: 32px;
+    box-sizing: border-box;
 }
 
 select:focus,
@@ -168,33 +174,40 @@ input:focus {
 
 .separator {
     color: #666;
-    padding: 0 4px;
+    padding: 0 2px;
+    font-size: 12px;
 }
 
 .button-group {
     display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 6px;
+    margin-top: 4px;
 }
 
 .reset-btn,
 .search-btn {
     flex: 1;
-    padding: 10px;
+    padding: 8px;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .reset-btn {
     background: white;
     border: 1px solid #ddd;
+    color: #666;
 }
 
 .search-btn {
     background: #4a90e2;
     color: white;
     border: none;
+    font-weight: 500;
 }
 
 .reset-btn:hover {
@@ -203,5 +216,17 @@ input:focus {
 
 .search-btn:hover {
     background: #357abd;
+}
+
+/* Chrome, Safari, Edge에서 number input의 화살표 제거 */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox에서 number input의 화살표 제거 */
+input[type='number'] {
+    -moz-appearance: textfield;
 }
 </style>
