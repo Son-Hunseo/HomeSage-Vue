@@ -60,7 +60,7 @@
             </div>
 
             <!-- Fixed Delete Actions -->
-            <div v-if="isDeleteMode" class="delete-actions fixed-bottom">
+            <div v-if="isDeleteMode" class="delete-actions">
                 <button
                     @click="deleteSelectedRooms"
                     :disabled="selectedRooms.length === 0"
@@ -79,7 +79,7 @@
                     <h2>{{ activeChatRoom.chatRoomName }}</h2>
                 </div>
 
-                <!-- Scrollable Messages Container -->
+                <!-- Messages Container -->
                 <div class="messages-wrapper">
                     <div ref="chatBodyRef" class="messages-container">
                         <div
@@ -99,11 +99,15 @@
                         <div v-if="typingMessage" class="message ai typing">
                             <div v-html="renderMarkdown(typingMessage.message)"></div>
                         </div>
+  
                     </div>
                 </div>
 
-                <!-- Fixed Chat Input -->
-                <div class="chat-input fixed-bottom">
+                <!-- 더미 공간 추가 -->
+                <div class="chat-input-dummy"></div>  
+
+                <!-- Chat Input -->
+                <div class="chat-input">
                     <input
                         :value="userInput"
                         type="text"
@@ -405,13 +409,16 @@ onMounted(fetchChatRooms)
 <style scoped>
 .app-container {
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 100px); /* 73px is header height (64px) + border (1px) + padding (8px) */
     background-color: #f9f9f9;
+    margin-top: 1px; /* Add small margin to account for header border */
 }
 
 .sidebar {
     width: 280px;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e0e0e0;
 }
 
 .sidebar-header {
@@ -420,10 +427,6 @@ onMounted(fetchChatRooms)
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.sidebar .fixed-bottom {
-    width: 280px;
 }
 
 .chat-rooms-list {
@@ -462,18 +465,22 @@ onMounted(fetchChatRooms)
 }
 
 .main-content {
-    position: relative;
     flex: 1;
-}
-
-.main-content .fixed-bottom {
-    width: calc(100% - 280px); /* Subtract sidebar width */
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-width: 800px; /* 추가: 최대 너비 제한 */
+    margin: 0 auto; /* 추가: 중앙 정렬 */
+    border-right: 1px solid #e0e0e0; /* 추가: 오른쪽 경계선 */
 }
 
 .chat-area {
+    flex: 1;
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0;
+    position: relative;
 }
 
 .chat-header {
@@ -483,28 +490,33 @@ onMounted(fetchChatRooms)
     text-align: center;
 }
 
-.messages-container {
+.messages-wrapper {
     flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.messages-container {
+    height: calc(100% - 76px); /* chat-input-dummy의 높이만큼 빼줌 */
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-bottom: 100px; /* Add padding to account for chat input */
 }
 
 .message {
-    max-width: 80%;
+    max-width: 70%; /* 수정: 메시지 너비 비율 조정 */
     padding: 12px 16px;
     border-radius: 8px;
-    line-height: 1.75;
+    line-height: 1.7;
 }
 
 .message.ai {
     background-color: white;
     align-self: flex-start;
     border: 1px solid #e0e0e0;
-    padding: 12px 16px 12px 40px; /* Increased left padding */
+    padding: 12px 16px 12px 40px;
     position: relative;
 }
 
@@ -520,6 +532,12 @@ onMounted(fetchChatRooms)
     border-top: 1px solid #e0e0e0;
     display: flex;
     gap: 12px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 76px;
+    z-index: 10;
 }
 
 .chat-input input {
@@ -629,20 +647,6 @@ onMounted(fetchChatRooms)
     cursor: pointer;
 }
 
-.messages-wrapper {
-    flex: 1;
-    overflow: hidden;
-    /* Remove position relative if not needed */
-}
-
-.fixed-bottom {
-    width: calc(100% - 280px); /* Subtract sidebar width */
-    padding: 16px;
-    background: white;
-    border-top: 1px solid #e0e0e0;
-    z-index: 10;
-}
-
 .new-chat-input {
     width: 100%;
     padding: 8px;
@@ -654,5 +658,12 @@ onMounted(fetchChatRooms)
 .new-chat-input:focus {
     outline: none;
     border-color: #8b4513;
+}
+
+.chat-input-dummy {
+    flex-shrink: 0;
+    height: 76px;
+    min-height: 76px;
+    visibility: hidden;
 }
 </style>
