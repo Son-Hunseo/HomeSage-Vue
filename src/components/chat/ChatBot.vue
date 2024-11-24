@@ -490,7 +490,8 @@ onMounted(fetchChatRooms)
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-bottom: 80px;
+    /* chat-input의 높이(80px)만큼 하단 여백 추가 */
+    margin-bottom: 80px;
 }
 
 .message {
@@ -633,7 +634,6 @@ onMounted(fetchChatRooms)
     flex: 1;
     overflow: hidden;
     position: relative;
-    padding-bottom: 80px; /* Space for fixed chat input */
 }
 
 .fixed-bottom {
