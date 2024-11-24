@@ -209,7 +209,7 @@ const signUp = async () => {
 h2 {
     margin-bottom: 10px;
     font-size: 24px;
-    color: #8b4513;
+    /* color: #8b4513; */
 }
 
 .modal-description {
@@ -281,7 +281,7 @@ h2 {
 .signup-btn {
     width: 100%;
     padding: 10px;
-    background: #8b4513;
+    background: #4a90e2;
     color: white;
     border: none;
     border-radius: 5px;
@@ -292,7 +292,7 @@ h2 {
 }
 
 .signup-btn:hover {
-    background: #a15d35;
+    background: #357abd;
 }
 
 .cancel-btn {

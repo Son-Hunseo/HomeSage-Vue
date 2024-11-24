@@ -123,7 +123,7 @@ const logout = async () => {
 }
 
 .btn-signup {
-    background: #8b4513;
+    background: #007bff;
     color: white;
 }
 
