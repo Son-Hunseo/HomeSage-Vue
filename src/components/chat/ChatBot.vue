@@ -467,7 +467,10 @@ onMounted(fetchChatRooms)
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* 추가: flex item의 최소 높이 설정 */
+    min-height: 0;
+    max-width: 800px; /* 추가: 최대 너비 제한 */
+    margin: 0 auto; /* 추가: 중앙 정렬 */
+    border-right: 1px solid #e0e0e0; /* 추가: 오른쪽 경계선 */
 }
 
 .chat-area {
@@ -476,7 +479,7 @@ onMounted(fetchChatRooms)
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    position: relative; /* 추가: 상대 위치 설정 */
+    position: relative;
 }
 
 .chat-header {
@@ -488,26 +491,24 @@ onMounted(fetchChatRooms)
 
 .messages-wrapper {
     flex: 1;
+    min-height: 0;
     overflow: hidden;
-    position: relative;
-    min-height: 0; /* 추가: flex item의 최소 높이 설정 */
 }
 
 .messages-container {
-    height: 100%;
+    height: calc(100% - 76px); /* chat-input-dummy의 높이만큼 빼줌 */
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-bottom: 20px; /* padding-bottom을 다시 기본값으로 변경 */
 }
 
 .message {
-    max-width: 80%;
+    max-width: 70%; /* 수정: 메시지 너비 비율 조정 */
     padding: 12px 16px;
     border-radius: 8px;
-    line-height: 1.75;
+    line-height: 1.7;
 }
 
 .message.ai {
@@ -530,10 +531,11 @@ onMounted(fetchChatRooms)
     border-top: 1px solid #e0e0e0;
     display: flex;
     gap: 12px;
-    position: absolute; /* 수정: 절대 위치로 변경 */
-    bottom: 0; /* 추가: 하단에 고정 */
+    position: absolute;
+    bottom: 0;
     left: 0;
     right: 0;
+    height: 76px;
     z-index: 10;
 }
 
@@ -658,8 +660,9 @@ onMounted(fetchChatRooms)
 }
 
 .chat-input-dummy {
-    height: 76px; /* chat-input의 height(padding 20px * 2 + input height 36px = 76px) */
+    flex-shrink: 0;
+    height: 76px;
     min-height: 76px;
-    visibility: hidden; /* 보이지는 않지만 공간은 차지 */
+    visibility: hidden;
 }
 </style>
