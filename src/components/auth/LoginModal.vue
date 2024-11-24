@@ -91,7 +91,7 @@ form {
 .login-btn {
     width: 100%;
     padding: 10px;
-    background: #8b4513;
+    background: #4a90e2;
     color: white;
     border: none;
     border-radius: 5px;
@@ -101,7 +101,7 @@ form {
 }
 
 .login-btn:hover {
-    background: #a15d35;
+    background: #357abd;
 }
 
 .signup-link {
@@ -114,6 +114,6 @@ form {
 }
 
 .signup-link:hover {
-    color: #8b4513;
+    color: #357abd;
 }
 </style>

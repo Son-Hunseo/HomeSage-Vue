@@ -21,12 +21,6 @@ const activeTab = ref('calendar')
                     달력
                 </button>
                 <button
-                    @click="activeTab = 'password'"
-                    :class="{ active: activeTab === 'password' }"
-                >
-                    비밀번호 변경
-                </button>
-                <button
                     @click="activeTab = 'reservations'"
                     :class="{ active: activeTab === 'reservations' }"
                 >
@@ -37,6 +31,12 @@ const activeTab = ref('calendar')
                     :class="{ active: activeTab === 'favorites' }"
                 >
                     찜목록
+                </button>
+                <button
+                    @click="activeTab = 'password'"
+                    :class="{ active: activeTab === 'password' }"
+                >
+                    비밀번호 변경
                 </button>
             </nav>
 
