@@ -409,8 +409,9 @@ onMounted(fetchChatRooms)
 <style scoped>
 .app-container {
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 100px); /* 73px is header height (64px) + border (1px) + padding (8px) */
     background-color: #f9f9f9;
+    margin-top: 1px; /* Add small margin to account for header border */
 }
 
 .sidebar {
