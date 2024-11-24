@@ -60,7 +60,7 @@
             </div>
 
             <!-- Fixed Delete Actions -->
-            <div v-if="isDeleteMode" class="delete-actions fixed-bottom">
+            <div v-if="isDeleteMode" class="delete-actions">
                 <button
                     @click="deleteSelectedRooms"
                     :disabled="selectedRooms.length === 0"
@@ -79,7 +79,7 @@
                     <h2>{{ activeChatRoom.chatRoomName }}</h2>
                 </div>
 
-                <!-- Scrollable Messages Container -->
+                <!-- Messages Container -->
                 <div class="messages-wrapper">
                     <div ref="chatBodyRef" class="messages-container">
                         <div
@@ -99,11 +99,15 @@
                         <div v-if="typingMessage" class="message ai typing">
                             <div v-html="renderMarkdown(typingMessage.message)"></div>
                         </div>
+  
                     </div>
                 </div>
 
-                <!-- Fixed Chat Input -->
-                <div class="chat-input fixed-bottom">
+                <!-- 더미 공간 추가 -->
+                <div class="chat-input-dummy"></div>  
+
+                <!-- Chat Input -->
+                <div class="chat-input">
                     <input
                         :value="userInput"
                         type="text"
@@ -411,7 +415,9 @@ onMounted(fetchChatRooms)
 
 .sidebar {
     width: 280px;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e0e0e0;
 }
 
 .sidebar-header {
@@ -420,10 +426,6 @@ onMounted(fetchChatRooms)
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.sidebar .fixed-bottom {
-    width: 280px;
 }
 
 .chat-rooms-list {
@@ -462,18 +464,19 @@ onMounted(fetchChatRooms)
 }
 
 .main-content {
-    position: relative;
     flex: 1;
-}
-
-.main-content .fixed-bottom {
-    width: calc(100% - 280px); /* Subtract sidebar width */
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* 추가: flex item의 최소 높이 설정 */
 }
 
 .chat-area {
+    flex: 1;
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0;
+    position: relative; /* 추가: 상대 위치 설정 */
 }
 
 .chat-header {
@@ -483,14 +486,21 @@ onMounted(fetchChatRooms)
     text-align: center;
 }
 
-.messages-container {
+.messages-wrapper {
     flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 0; /* 추가: flex item의 최소 높이 설정 */
+}
+
+.messages-container {
+    height: 100%;
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-bottom: 100px; /* Add padding to account for chat input */
+    padding-bottom: 20px; /* padding-bottom을 다시 기본값으로 변경 */
 }
 
 .message {
@@ -504,7 +514,7 @@ onMounted(fetchChatRooms)
     background-color: white;
     align-self: flex-start;
     border: 1px solid #e0e0e0;
-    padding: 12px 16px 12px 40px; /* Increased left padding */
+    padding: 12px 16px 12px 40px;
     position: relative;
 }
 
@@ -520,6 +530,11 @@ onMounted(fetchChatRooms)
     border-top: 1px solid #e0e0e0;
     display: flex;
     gap: 12px;
+    position: absolute; /* 수정: 절대 위치로 변경 */
+    bottom: 0; /* 추가: 하단에 고정 */
+    left: 0;
+    right: 0;
+    z-index: 10;
 }
 
 .chat-input input {
@@ -629,20 +644,6 @@ onMounted(fetchChatRooms)
     cursor: pointer;
 }
 
-.messages-wrapper {
-    flex: 1;
-    overflow: hidden;
-    /* Remove position relative if not needed */
-}
-
-.fixed-bottom {
-    width: calc(100% - 280px); /* Subtract sidebar width */
-    padding: 16px;
-    background: white;
-    border-top: 1px solid #e0e0e0;
-    z-index: 10;
-}
-
 .new-chat-input {
     width: 100%;
     padding: 8px;
@@ -654,5 +655,11 @@ onMounted(fetchChatRooms)
 .new-chat-input:focus {
     outline: none;
     border-color: #8b4513;
+}
+
+.chat-input-dummy {
+    height: 76px; /* chat-input의 height(padding 20px * 2 + input height 36px = 76px) */
+    min-height: 76px;
+    visibility: hidden; /* 보이지는 않지만 공간은 차지 */
 }
 </style>
