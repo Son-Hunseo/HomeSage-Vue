@@ -471,9 +471,9 @@ onMounted(fetchChatRooms)
 }
 
 .chat-area {
-    height: 100%;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .chat-header {
@@ -484,14 +484,13 @@ onMounted(fetchChatRooms)
 }
 
 .messages-container {
-    height: 100%;
+    flex: 1;
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* chat-input의 높이(80px)만큼 하단 여백 추가 */
-    margin-bottom: 80px;
+    padding-bottom: 100px; /* Add padding to account for chat input */
 }
 
 .message {
@@ -633,17 +632,14 @@ onMounted(fetchChatRooms)
 .messages-wrapper {
     flex: 1;
     overflow: hidden;
-    position: relative;
+    /* Remove position relative if not needed */
 }
 
 .fixed-bottom {
-    position: fixed;
-    bottom: 0;
-    height: 80px;
+    width: calc(100% - 280px); /* Subtract sidebar width */
+    padding: 16px;
     background: white;
     border-top: 1px solid #e0e0e0;
-    padding: 16px;
-    width: inherit;
     z-index: 10;
 }
 
