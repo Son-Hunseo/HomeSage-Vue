@@ -427,8 +427,9 @@ onMounted(fetchAnalysisList)
 <style scoped>
 .app-container {
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 100px); /* 헤더 높이(64px) + 테두리(1px) + 패딩(8px) 제외 */
     background-color: #f0f2f5;
+    margin-top: 1px;
 }
 
 .sidebar {
@@ -569,8 +570,13 @@ onMounted(fetchAnalysisList)
 
 .result-area img {
     width: 100%;
+    max-width: 400px; /* 최대 너비 제한 */
+    height: auto;
     border-radius: 4px;
     margin-bottom: 16px;
+    display: block; /* 이미지 중앙 정렬을 위해 */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .result-text {
@@ -578,6 +584,8 @@ onMounted(fetchAnalysisList)
     padding: 16px;
     border-radius: 4px;
     white-space: pre-wrap;
+    line-height: 1.7; /* 줄간격 조정 */
+    font-size: 14px; /* 폰트 크기 조정 */
 }
 
 .delete-mode-button {
@@ -688,33 +696,6 @@ onMounted(fetchAnalysisList)
 }
 
 /* 나머지 기존 스타일은 유지 */
-.app-container {
-    display: flex;
-    height: 100vh;
-    background-color: #f0f2f5;
-}
-
-.sidebar {
-    width: 300px;
-    background: white;
-    border-right: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.analysis-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-}
 
 .analysis-item {
     background: white;
@@ -748,16 +729,31 @@ onMounted(fetchAnalysisList)
     border-color: #8b4513;
 }
 
-.result-text :deep(p) {
-    margin: 0.5em 0; /* 기본 마진을 줄임 */
+/* 마크다운 요소들의 스타일 통일 */
+.result-text :deep(p),
+.result-text :deep(ul),
+.result-text :deep(ol),
+.result-text :deep(h1),
+.result-text :deep(h2),
+.result-text :deep(h3),
+.result-text :deep(h4),
+.result-text :deep(h5),
+.result-text :deep(h6),
+.result-text :deep(blockquote) {
+    margin: 0;
+    line-height: 1.7;
 }
 
-.result-text :deep(p:first-child) {
-    margin-top: 0; /* 첫 번째 문단의 위쪽 마진 제거 */
+.result-text :deep(li) {
+    margin: 0;
+    line-height: 1.7;
 }
 
-.result-text :deep(p:last-child) {
-    margin-bottom: 0; /* 마지막 문단의 아래쪽 마진 제거 */
+/* 리스트 패딩 조정 */
+.result-text :deep(ul),
+.result-text :deep(ol) {
+    padding-left: 1.5em;
+    margin: 0;
 }
 
 .sidebar {
@@ -772,4 +768,6 @@ onMounted(fetchAnalysisList)
     z-index: 10;
     border-top: 1px solid #e0e0e0;
 }
+
+
 </style>
