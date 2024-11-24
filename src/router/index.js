@@ -46,15 +46,28 @@ router.beforeEach(async (to, from, next) => {
 
     // 보호된 라우트에 접근할 때만 인증 체크
     if (to.meta.requiresAuth) {
-        await authStore.checkAuthStatus()
+        try {
+            await authStore.checkAuthStatus()
 
-        // 로그인이 필요한 경로인지 확인
-        if (!authStore.isAuthenticated) {
-            alert('로그인이 필요한 페이지입니다.')
-            return next('/') // 로그인 안 된 경우 메인 화면으로 리다이렉트
+            if (!authStore.isAuthenticated) {
+                alert('로그인이 필요한 페이지입니다.')
+                return next('/')
+            }
+
+            // userRole이 없는 경우
+            if (!authStore.userRole) {
+                console.error('권한 정보가 없습니다')
+                return next('/')
+            }
+
+            next()
+        } catch (error) {
+            console.error('인증 체크 중 오류 발생:', error)
+            return next('/')
         }
+    } else {
+        next()
     }
-    next() // 정상적으로 이동
 })
 
 export default router

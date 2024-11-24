@@ -14,7 +14,7 @@ export const useUserStore = defineStore('user', () => {
 
         try {
             const response = await axios.get('/user/interest/list', { withCredentials: true })
-            interestedSales.value = response.data.map((item) => item.saleId)
+            interestedSales.value = response.data
         } catch (error) {
             console.error('찜 목록 조회 중 오류 발생:', error)
             interestedSales.value = []
@@ -46,7 +46,7 @@ export const useUserStore = defineStore('user', () => {
 
     // 찜한 매물인지 확인
     const isInterested = (saleId) => {
-        return interestedSales.value.includes(saleId)
+        return interestedSales.value.some((sale) => sale.saleId === saleId)
     }
 
     // 예약한 매물인지 확인
@@ -66,11 +66,10 @@ export const useUserStore = defineStore('user', () => {
                 {},
                 { withCredentials: true },
             )
-            if (response.data.isInterest) {
-                interestedSales.value.push(saleId)
-            } else {
-                interestedSales.value = interestedSales.value.filter((id) => id !== saleId)
-            }
+
+            // 찜 목록 갱신을 위해 서버에서 다시 데이터를 가져옴
+            await fetchInterestedSales()
+
             return response.data.isInterest
         } catch (error) {
             console.error('찜하기 처리 중 오류 발생:', error)

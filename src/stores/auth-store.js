@@ -9,9 +9,31 @@ export const useAuthStore = defineStore('authStore', () => {
 
     // 로그인 여부 상태
     const isAuthenticated = ref(false)
+    // 사용자 권한 상태
+    const userRole = ref(null)
 
     // 로그인 상태 반환 (getter)
     const authStatus = computed(() => isAuthenticated.value)
+    // 권한 체크를 위한 computed
+    const isConsumer = computed(() => userRole.value === 'CONSUMER')
+    const isProvider = computed(() => userRole.value === 'PROVIDER')
+
+    /**
+     * JWT token에서 userRole 추출
+     */
+    const extractRoleFromToken = (token) => {
+        if (!token) return null
+
+        try {
+            const base64Url = token.split('.')[1]
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+            const payload = JSON.parse(window.atob(base64))
+            return payload.userRole
+        } catch (error) {
+            console.error('토큰 파싱 중 오류 발생:', error)
+            return null
+        }
+    }
 
     /**
      * actions
@@ -25,12 +47,15 @@ export const useAuthStore = defineStore('authStore', () => {
         await axios
             .get('/auth/refresh', { withCredentials: true })
             .then((response) => {
-                axios.defaults.headers.common['Authorization'] = response.headers.authorization
-                isAuthenticated.value = true // 로그인 성공 시 상태 변경
+                const token = response.headers.authorization
+                axios.defaults.headers.common['Authorization'] = token
+                isAuthenticated.value = true
+                userRole.value = extractRoleFromToken(token)
             })
             .catch((error) => {
                 console.log(error)
                 isAuthenticated.value = false
+                userRole.value = null
             })
     }
 
@@ -38,21 +63,25 @@ export const useAuthStore = defineStore('authStore', () => {
         await axios
             .post('/auth/login', userInfo, { withCredentials: true })
             .then((response) => {
-                axios.defaults.headers.common['Authorization'] = response.headers.authorization
-                isAuthenticated.value = true // 로그인 성공 시 상태 변경
+                const token = response.headers.authorization
+                axios.defaults.headers.common['Authorization'] = token
+                isAuthenticated.value = true
+                userRole.value = extractRoleFromToken(token)
                 alert('로그인 성공!')
             })
             .catch((error) => {
                 console.log(error)
                 isAuthenticated.value = false
+                userRole.value = null
                 alert('로그인 실패. 이메일과 비밀번호를 확인해주세요.')
             })
     }
 
     const logout = async () => {
-        await axios.delete('/auth/logout', { withCredentials: true }).then((response) => {
+        await axios.delete('/auth/logout', { withCredentials: true }).then(() => {
             axios.defaults.headers.common['Authorization'] = ''
             isAuthenticated.value = false
+            userRole.value = null
         })
     }
 
@@ -65,6 +94,7 @@ export const useAuthStore = defineStore('authStore', () => {
                 alert('비밀번호 변경이 완료되었습니다!')
                 axios.defaults.headers.common['Authorization'] = ''
                 isAuthenticated.value = false
+                userRole.value = null
             })
             .catch(() => {
                 alert('기존 비밀번호가 일치하지 않습니다.')
@@ -74,6 +104,9 @@ export const useAuthStore = defineStore('authStore', () => {
     return {
         isAuthenticated,
         authStatus,
+        userRole,
+        isConsumer,
+        isProvider,
         checkAuthStatus,
         login,
         logout,
