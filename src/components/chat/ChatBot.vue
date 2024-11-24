@@ -490,6 +490,7 @@ onMounted(fetchChatRooms)
     display: flex;
     flex-direction: column;
     gap: 12px;
+    padding-bottom: 80px;
 }
 
 .message {
@@ -632,7 +633,7 @@ onMounted(fetchChatRooms)
     flex: 1;
     overflow: hidden;
     position: relative;
-    margin-bottom: 80px; /* Space for fixed chat input */
+    padding-bottom: 80px; /* Space for fixed chat input */
 }
 
 .fixed-bottom {
