@@ -60,7 +60,7 @@
             </div>
 
             <!-- Delete Actions -->
-            <div v-if="isDeleteMode" class="delete-actions">
+            <div v-if="isDeleteMode" class="delete-actions">  <!-- fixed-bottom 클래스는 필요없음 -->
                 <button
                     @click="deleteSelectedAnalyses"
                     :disabled="selectedItems.length === 0"
@@ -104,6 +104,7 @@
                         <div v-else class="result-area">
                             <img :src="activeAnalysis.registeredUrl" alt="Registered Document" />
                             <button
+                                v-if="!activeAnalysis.registeredResult"
                                 @click="analyzeRegistered"
                                 :disabled="isAnalyzingRegistered"
                                 class="analyze-button"
@@ -151,6 +152,7 @@
                         <div v-else class="result-area">
                             <img :src="activeAnalysis.ledgerUrl" alt="Ledger Document" />
                             <button
+                                v-if="!activeAnalysis.ledgerResult"
                                 @click="analyzeLedger"
                                 :disabled="isAnalyzingLedger"
                                 class="analyze-button"
@@ -744,5 +746,30 @@ onMounted(fetchAnalysisList)
 .new-analysis-input:focus {
     outline: none;
     border-color: #8b4513;
+}
+
+.result-text :deep(p) {
+    margin: 0.5em 0; /* 기본 마진을 줄임 */
+}
+
+.result-text :deep(p:first-child) {
+    margin-top: 0; /* 첫 번째 문단의 위쪽 마진 제거 */
+}
+
+.result-text :deep(p:last-child) {
+    margin-bottom: 0; /* 마지막 문단의 아래쪽 마진 제거 */
+}
+
+.sidebar {
+    position: relative; /* 추가 */
+}
+
+.sidebar .delete-actions {
+    position: fixed;
+    bottom: 0;
+    width: 300px;
+    background: white;
+    z-index: 10;
+    border-top: 1px solid #e0e0e0;
 }
 </style>
