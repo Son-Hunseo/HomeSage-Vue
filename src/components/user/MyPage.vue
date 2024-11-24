@@ -1,86 +1,36 @@
+<!-- MyPage.vue -->
 <script setup>
-import { ref } from 'vue'
-import Header from '@/components/Header.vue'
-import Calendar from '@/components/user/Calendar.vue'
-import PasswordChange from '@/components/user/PasswordChange.vue'
-import ReservationList from '@/components/user/ReservationList.vue'
-import FavoritesList from '@/components/user/FavoritesList.vue'
+import { onMounted, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth-store'
+import ConsumerMyPage from '@/components/user/ConsumerMyPage.vue'
+import ProviderMyPage from '@/components/user/provider/ProviderMyPage.vue'
 
-const activeTab = ref('calendar')
+const authStore = useAuthStore()
+const router = useRouter()
+
+// userRole이 변경될 때마다 실행
+watchEffect(() => {
+    console.log('Current userRole:', authStore.userRole) // 디버깅용
+})
+
+onMounted(async () => {
+    // 이미 router.beforeEach에서 인증 체크를 하므로,
+    // 여기서는 role 정보만 확인합니다
+    if (!authStore.userRole) {
+        try {
+            await authStore.checkAuthStatus()
+        } catch (error) {
+            console.error('권한 정보 확인 중 오류 발생:', error)
+        }
+    }
+})
 </script>
 
 <template>
-    <div>
-        <Header />
-        <div class="mypage-container">
-            <nav class="mypage-nav">
-                <button
-                    @click="activeTab = 'calendar'"
-                    :class="{ active: activeTab === 'calendar' }"
-                >
-                    달력
-                </button>
-                <button
-                    @click="activeTab = 'password'"
-                    :class="{ active: activeTab === 'password' }"
-                >
-                    비밀번호 변경
-                </button>
-                <button
-                    @click="activeTab = 'reservations'"
-                    :class="{ active: activeTab === 'reservations' }"
-                >
-                    예약목록
-                </button>
-                <button
-                    @click="activeTab = 'favorites'"
-                    :class="{ active: activeTab === 'favorites' }"
-                >
-                    찜목록
-                </button>
-            </nav>
-
-            <main class="mypage-content">
-                <Calendar v-if="activeTab === 'calendar'" />
-                <PasswordChange v-if="activeTab === 'password'" />
-                <ReservationList v-if="activeTab === 'reservations'" />
-                <FavoritesList v-if="activeTab === 'favorites'" />
-            </main>
-        </div>
+    <div class="my-page">
+        <ConsumerMyPage v-if="authStore.userRole === 'CONSUMER'" />
+        <ProviderMyPage v-if="authStore.userRole === 'PROVIDER'" />
+        <div v-if="!authStore.userRole" class="error-state">권한 정보를 불러오는 중...</div>
     </div>
 </template>
-
-<style scoped>
-.mypage-container {
-    display: flex;
-    height: calc(100vh - 80px); /* 헤더 높이 제외 */
-}
-
-.mypage-nav {
-    width: 200px;
-    background-color: #f4f4f4;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.mypage-nav button {
-    padding: 1rem;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.mypage-nav button.active,
-.mypage-nav button:hover {
-    background-color: #e0e0e0;
-}
-
-.mypage-content {
-    flex-grow: 1;
-    padding: 1rem;
-    overflow-y: auto;
-}
-</style>

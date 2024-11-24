@@ -70,7 +70,7 @@ input {
 }
 
 .btn-submit {
-    background-color: #8b4513;
+    background-color: #4a90e2;
     color: white;
     border: none;
     padding: 1rem;
