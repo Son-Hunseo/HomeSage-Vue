@@ -7,6 +7,7 @@ export const useUserStore = defineStore('user', () => {
     const authStore = useAuthStore()
     const interestedSales = ref([]) // 찜한 매물 ID 목록
     const reservations = ref([]) // 예약 목록
+    const providerReservations = ref([]) // provider 예약 목록
 
     // 찜 목록 조회
     const fetchInterestedSales = async () => {
@@ -14,7 +15,8 @@ export const useUserStore = defineStore('user', () => {
 
         try {
             const response = await axios.get('/user/interest/list', { withCredentials: true })
-            interestedSales.value = response.data
+            interestedSales.value = response.data || []
+            console.log(interestedSales.value)
         } catch (error) {
             console.error('찜 목록 조회 중 오류 발생:', error)
             interestedSales.value = []
@@ -22,7 +24,7 @@ export const useUserStore = defineStore('user', () => {
                 // 찜한 매물이 없는 경우
                 return
             }
-            throw new Error('찜 목록을 불러오는데 실패했습니다.')
+            // throw new Error('찜 목록을 불러오는데 실패했습니다.')
         }
     }
 
@@ -32,7 +34,8 @@ export const useUserStore = defineStore('user', () => {
 
         try {
             const response = await axios.get('/user/reserve/list', { withCredentials: true })
-            reservations.value = response.data
+            reservations.value = response.data || [] // null이나 undefined일 경우 빈 배열 할당
+            console.log(reservations.value)
         } catch (error) {
             console.error('예약 목록 조회 중 오류 발생:', error)
             reservations.value = []
@@ -40,7 +43,7 @@ export const useUserStore = defineStore('user', () => {
                 // 예약한 매물이 없는 경우
                 return
             }
-            throw new Error('예약 목록을 불러오는데 실패했습니다.')
+            // throw new Error('예약 목록을 불러오는데 실패했습니다.')
         }
     }
 
@@ -119,6 +122,26 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    // provider 예약 목록 조회
+    const fetchProviderReservations = async () => {
+        if (!authStore.isAuthenticated) return
+
+        try {
+            const response = await axios.get('/user/provider/reserve/list', {
+                withCredentials: true,
+            })
+            providerReservations.value = response.data || []
+            console.log(providerReservations.value)
+        } catch (error) {
+            console.error('판매자 예약 목록 조회 중 오류 발생:', error)
+            providerReservations.value = []
+            if (error.response && error.response.status === 204) {
+                return
+            }
+            // throw new Error('예약 목록을 불러오는데 실패했습니다.')
+        }
+    }
+
     return {
         interestedSales,
         reservations,
@@ -129,5 +152,7 @@ export const useUserStore = defineStore('user', () => {
         toggleInterest,
         makeReservation,
         cancelReservation,
+        providerReservations,
+        fetchProviderReservations,
     }
 })
