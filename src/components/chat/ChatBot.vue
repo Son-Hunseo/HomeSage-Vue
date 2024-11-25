@@ -521,7 +521,7 @@ onMounted(fetchChatRooms)
 }
 
 .message.human {
-    background-color: #8b4513;
+    background-color: #4A90E2;
     color: white;
     align-self: flex-end;
 }
@@ -550,7 +550,7 @@ onMounted(fetchChatRooms)
 
 .chat-input button {
     padding: 12px 24px;
-    background-color: #8b4513;
+    background-color: #255584;
     color: white;
     border: none;
     border-radius: 8px;
@@ -573,7 +573,7 @@ onMounted(fetchChatRooms)
 .dot {
     width: 8px;
     height: 8px;
-    background-color: #8b4513;
+    background-color: #255584;
     border-radius: 50%;
     animation: bounce 0.8s infinite;
 }
@@ -605,15 +605,15 @@ onMounted(fetchChatRooms)
 
 .delete-mode-button {
     padding: 6px 12px;
-    border: 1px solid #8b4513;
-    color: #8b4513;
+    border: 1px solid #4A90E2;
+    color: #4A90E2;
     background: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
 .delete-mode-button.active {
-    background: #8b4513;
+    background: #4A90E2;
     color: white;
 }
 
@@ -657,7 +657,7 @@ onMounted(fetchChatRooms)
 
 .new-chat-input:focus {
     outline: none;
-    border-color: #8b4513;
+    border-color: #4A90E2;
 }
 
 .chat-input-dummy {
