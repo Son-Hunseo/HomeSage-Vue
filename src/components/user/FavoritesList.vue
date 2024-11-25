@@ -75,6 +75,7 @@ const openProductDetail = (sale) => {
         dong: sale.dong,
         latitude: Number(sale.latitude),
         longitude: Number(sale.longitude),
+        saleImgUrl: sale.saleImgUrl,
     }
     showProductDetail.value = true
 }
@@ -86,7 +87,7 @@ const handleInterestChanged = async () => {
 
 <template>
     <div class="favorites-list">
-        <h2 class="page-title">찜한 매물</h2>
+        <h2 class="page-title">찜한 상품</h2>
 
         <div v-if="userStore.interestedSales.length === 0" class="empty-state">
             찜한 상품이 없습니다.

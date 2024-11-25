@@ -86,6 +86,7 @@ const openProductDetail = (reservation) => {
         dong: reservation.dong,
         latitude: reservation.latitude,
         longitude: reservation.longitude,
+        saleImgUrl: reservation.saleImgUrl,
     }
     selectedSale.value = saleInfo
     showProductDetail.value = true
