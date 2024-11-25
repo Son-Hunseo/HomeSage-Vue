@@ -11,7 +11,7 @@ const router = useRouter()
 const menuItems = [
     { name: '등기부등본 / 건축물대장 분석', path: '/analyze' },
     { name: '부동산 QA 챗봇', path: '/chatbot' },
-    { name: '공지 사항', path: '/notices' },
+    { name: '부동산 주요 정보', path: '/info' },
 ]
 
 // 모달 상태 관리

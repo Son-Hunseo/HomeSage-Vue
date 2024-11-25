@@ -4,7 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import MyPage from '@/components/user/MyPage.vue'
 import Analyze from '@/components/analyze/Analyze.vue'
 import ChatBot from '@/components/chat/ChatBot.vue'
-import Notices from '@/components/nav/Notices.vue'
+import Info from "@/components/info/Info.vue"
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,9 +33,9 @@ const router = createRouter({
             meta: { requiresAuth: true }, // 로그인 필요 플래그 추가
         },
         {
-            path: '/notices',
-            name: 'Notices',
-            component: Notices,
+            path: '/info',
+            name: 'Info',
+            component: Info,
         },
     ],
 })
