@@ -126,9 +126,51 @@
                                             class="main-image"
                                         />
                                         <img 
-                                            v-if="activeAnalysis[`${activeDocumentType}Score`]"
-                                            :src="`src/assets/${activeAnalysis[`${activeDocumentType}Score`]}.png`"
-                                            :alt="activeAnalysis[`${activeDocumentType}Score`]"
+                                            v-if="activeAnalysis[`${activeDocumentType}Score`] === 'A+'"
+                                            src="@/assets/A+.png"
+                                            alt="A+"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'A'"
+                                            src="@/assets/A.png"
+                                            alt="A"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'B+'"
+                                            src="@/assets/B+.png"
+                                            alt="B+"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'B'"
+                                            src="@/assets/B.png"
+                                            alt="B"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'C+'"
+                                            src="@/assets/C+.png"
+                                            alt="C+"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'C'"
+                                            src="@/assets/C.png"
+                                            alt="C"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'D'"
+                                            src="@/assets/D.png"
+                                            alt="D"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'F'"
+                                            src="@/assets/F.png"
+                                            alt="F"
                                             class="score-image"
                                         />
                                     </div>
@@ -139,8 +181,10 @@
                                             <h3>분석 요약</h3>
                                             <div class="risk-indicator"></div>
                                         </div>
-                                        <div class="summary-content" v-html="renderMarkdown(activeAnalysis[`${activeDocumentType}Summary`])">
-                                        </div>
+                                        <div 
+                                            class="summary-content"
+                                            v-html="renderMarkdown(typingSummary?.message || activeAnalysis[`${activeDocumentType}Summary`])"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -264,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, nextTick, watch, onUnmounted } from 'vue'
+import { ref, onMounted, inject, nextTick, watch, onUnmounted, computed } from 'vue'
 import Header from '@/components/Header.vue'
 import MarkdownIt from 'markdown-it'
 
@@ -291,6 +335,12 @@ const newAnalysisName = ref('')
 const isCreatingNewAnalysis = ref(false)
 const isComposing = ref(false)
 const isCreating = ref(false)
+
+const typingSummary = ref(null)
+const showSummary = ref(false)
+const typingContent = computed(() => 
+    activeDocumentType.value === 'registered' ? typingRegistered.value : typingLedger.value
+)
 
 // 분석 진행 상태 관련 상태 추가
 const analysisMessages = ref([
@@ -343,6 +393,12 @@ watch([isAnalyzingRegistered, isAnalyzingLedger, typingRegistered, typingLedger]
     }
 )
 
+watch(typingContent, (newValue) => {
+    if (!newValue && activeAnalysis.value?.[`${activeDocumentType.value}Result`]) {
+        startSummaryTypingEffect(activeAnalysis.value[`${activeDocumentType.value}Summary`])
+    }
+})
+
 // 컴포넌트 언마운트 시 타이머 정리
 onUnmounted(() => {
     stopProgressAnimation()
@@ -393,6 +449,29 @@ const startTypingEffect = (message, type) => {
                 typingLedger.value = null
                 isAnalyzingLedger.value = false
             }
+        }
+    }
+
+    typeNextCharacter()
+}
+
+const startSummaryTypingEffect = (summary) => {
+    if (!summary) return
+    
+    showSummary.value = true
+    typingSummary.value = {
+        message: '',
+        fullMessage: summary
+    }
+
+    let currentIndex = 0
+    const typeNextCharacter = () => {
+        if (currentIndex < typingSummary.value.fullMessage.length) {
+            typingSummary.value.message += typingSummary.value.fullMessage[currentIndex]
+            currentIndex++
+            setTimeout(typeNextCharacter, 30)
+        } else {
+            typingSummary.value = null
         }
     }
 
