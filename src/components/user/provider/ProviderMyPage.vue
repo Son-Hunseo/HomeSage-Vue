@@ -1,12 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import Header from '@/components/Header.vue'
-import Calendar from '@/components/user/Calendar.vue'
+import ProviderCalendar from '@/components/user/provider/ProviderCalendar.vue'
 import ProviderReserveList from '@/components/user/provider/ProviderReserveList.vue'
 import ProviderSaleUpload from '@/components/user/provider/ProviderSaleUpload.vue'
 import PasswordChange from '@/components/user/PasswordChange.vue'
 
-const activeTab = ref('calendar')
+const activeTab = ref('providerCalendar')
 </script>
 
 <template>
@@ -15,16 +15,16 @@ const activeTab = ref('calendar')
         <div class="mypage-container">
             <nav class="mypage-nav">
                 <button
-                    @click="activeTab = 'calendar'"
-                    :class="{ active: activeTab === 'calendar' }"
+                    @click="activeTab = 'providerCalendar'"
+                    :class="{ active: activeTab === 'providerCalendar' }"
                 >
-                    예약 일정표
+                    예약 일정
                 </button>
                 <button
                     @click="activeTab = 'reservations'"
                     :class="{ active: activeTab === 'reservations' }"
                 >
-                    예약목록
+                    예약 관리
                 </button>
                 <button
                     @click="activeTab = 'saleUpload'"
@@ -41,7 +41,7 @@ const activeTab = ref('calendar')
             </nav>
 
             <main class="mypage-content">
-                <Calendar v-if="activeTab === 'calendar'" />
+                <ProviderCalendar v-if="activeTab === 'providerCalendar'" />
                 <ProviderReserveList v-if="activeTab === 'reservations'" />
                 <ProviderSaleUpload v-if="activeTab === 'saleUpload'" />
                 <PasswordChange v-if="activeTab === 'password'" />
