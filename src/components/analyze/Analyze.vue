@@ -175,7 +175,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="document-summary" v-if="typingSummary || showSummary">
+                                <div class="document-summary" v-if="showSummary">
                                     <div class="summary-box">
                                         <div class="summary-header">
                                             <h3>분석 요약</h3>
@@ -183,12 +183,6 @@
                                         </div>
                                         <div 
                                             class="summary-content"
-                                            v-if="typingSummary"
-                                            v-html="renderMarkdown(typingSummary.message)"
-                                        />
-                                        <div 
-                                            class="summary-content"
-                                            v-else
                                             v-html="renderMarkdown(activeAnalysis[`${activeDocumentType}Summary`])"
                                         />
                                     </div>
@@ -319,7 +313,7 @@
                                     />
                                 </div>
                             </div>
-                            <div class="document-summary">
+                            <div class="document-summary" v-if="showSummary">
                                 <div class="summary-box">
                                     <div class="summary-header">
                                         <h3>분석 요약</h3>
@@ -327,7 +321,7 @@
                                     </div>
                                     <div 
                                         class="summary-content"
-                                        v-html="renderMarkdown(activeAnalysis.ledgerSummary)"
+                                        v-html="renderMarkdown(activeAnalysis[`${activeDocumentType}Summary`])"
                                     />
                                 </div>
                             </div>
@@ -504,59 +498,41 @@ const renderMarkdown = (text) => {
 
 // 타이핑 효과
 const startTypingEffect = (message, type) => {
-    const typingRef = type === 'registered' ? typingRegistered : typingLedger
+    const typingRef = type === 'registered' ? typingRegistered : typingLedger;
     typingRef.value = {
         message: '',
         fullMessage: message,
-    }
+    };
 
-    let currentIndex = 0
+    let currentIndex = 0;
     const typeNextCharacter = () => {
         if (currentIndex < typingRef.value.fullMessage.length) {
-            typingRef.value.message += typingRef.value.fullMessage[currentIndex]
-            currentIndex++
-            setTimeout(typeNextCharacter, 30)
+            typingRef.value.message += typingRef.value.fullMessage[currentIndex];
+            currentIndex++;
+            setTimeout(typeNextCharacter, 30);
         } else {
             if (type === 'registered') {
-                activeAnalysis.value.registeredResult = typingRef.value.fullMessage
-                typingRegistered.value = null
-                isAnalyzingRegistered.value = false
+                activeAnalysis.value.registeredResult = typingRef.value.fullMessage;
+                typingRegistered.value = null;
+                isAnalyzingRegistered.value = false;
             } else {
-                activeAnalysis.value.ledgerResult = typingRef.value.fullMessage
-                typingLedger.value = null
-                isAnalyzingLedger.value = false
+                activeAnalysis.value.ledgerResult = typingRef.value.fullMessage;
+                typingLedger.value = null;
+                isAnalyzingLedger.value = false;
             }
-            
-            // After the main typing effect, start the summary typing effect
-            startSummaryTypingEffect(activeAnalysis.value[`${type}Summary`])
+            // 요약을 즉시 표시하도록 처리
+            showSummary.value = true;
         }
+    };
+
+    typeNextCharacter();
+};
+
+watch(typingContent, (newValue) => {
+    if (!newValue && activeAnalysis.value?.[`${activeDocumentType.value}Result`]) {
+        showSummary.value = true; // 요약은 결과가 완료되면 즉시 보여줌
     }
-
-    typeNextCharacter()
-}
-
-const startSummaryTypingEffect = (summary) => {
-    if (!summary) return
-
-    showSummary.value = true
-    typingSummary.value = {
-        message: '',
-        fullMessage: summary,
-    }
-
-    let currentIndex = 0
-    const typeNextCharacterInSummary = () => {
-        if (currentIndex < typingSummary.value.fullMessage.length) {
-            typingSummary.value.message += typingSummary.value.fullMessage[currentIndex]
-            currentIndex++
-            setTimeout(typeNextCharacterInSummary, 30)
-        } else {
-            typingSummary.value = null
-        }
-    }
-
-    typeNextCharacterInSummary()
-}
+});
 
 // 새 분석 생성 관련 함수들
 const startNewAnalysisCreation = () => {
