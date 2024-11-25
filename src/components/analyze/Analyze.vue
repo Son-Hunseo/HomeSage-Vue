@@ -175,7 +175,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="document-summary">
+                                <div class="document-summary" v-if="typingSummary || showSummary">
                                     <div class="summary-box">
                                         <div class="summary-header">
                                             <h3>분석 요약</h3>
@@ -183,7 +183,13 @@
                                         </div>
                                         <div 
                                             class="summary-content"
-                                            v-html="renderMarkdown(typingSummary?.message || activeAnalysis[`${activeDocumentType}Summary`])"
+                                            v-if="typingSummary"
+                                            v-html="renderMarkdown(typingSummary.message)"
+                                        />
+                                        <div 
+                                            class="summary-content"
+                                            v-else
+                                            v-html="renderMarkdown(activeAnalysis[`${activeDocumentType}Summary`])"
                                         />
                                     </div>
                                 </div>
@@ -520,6 +526,9 @@ const startTypingEffect = (message, type) => {
                 typingLedger.value = null
                 isAnalyzingLedger.value = false
             }
+            
+            // After the main typing effect, start the summary typing effect
+            startSummaryTypingEffect(activeAnalysis.value[`${type}Summary`])
         }
     }
 
@@ -528,25 +537,25 @@ const startTypingEffect = (message, type) => {
 
 const startSummaryTypingEffect = (summary) => {
     if (!summary) return
-    
+
     showSummary.value = true
     typingSummary.value = {
         message: '',
-        fullMessage: summary
+        fullMessage: summary,
     }
 
     let currentIndex = 0
-    const typeNextCharacter = () => {
+    const typeNextCharacterInSummary = () => {
         if (currentIndex < typingSummary.value.fullMessage.length) {
             typingSummary.value.message += typingSummary.value.fullMessage[currentIndex]
             currentIndex++
-            setTimeout(typeNextCharacter, 30)
+            setTimeout(typeNextCharacterInSummary, 30)
         } else {
             typingSummary.value = null
         }
     }
 
-    typeNextCharacter()
+    typeNextCharacterInSummary()
 }
 
 // 새 분석 생성 관련 함수들
