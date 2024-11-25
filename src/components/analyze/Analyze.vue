@@ -175,11 +175,13 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="document-summary">
+                                <div 
+                                    v-if="showSummary && (!typingRegistered && !typingLedger)" 
+                                    class="document-summary"
+                                >
                                     <div class="summary-box">
                                         <div class="summary-header">
                                             <h3>분석 요약</h3>
-                                            <div class="risk-indicator"></div>
                                         </div>
                                         <div 
                                             class="summary-content"
@@ -190,12 +192,12 @@
                             </div>
                         </div>
                         <button
-                            v-if="!activeAnalysis.registeredResult"
-                            @click="analyzeRegistered"
-                            :disabled="isAnalyzingRegistered"
+                            v-if="!activeAnalysis[`${activeDocumentType}Result`]"
+                            @click="activeDocumentType === 'registered' ? analyzeRegistered() : analyzeLedger()"
+                            :disabled="activeDocumentType === 'registered' ? isAnalyzingRegistered : isAnalyzingLedger"
                             class="analyze-button"
                         >
-                            등기부 등본 분석
+                            {{ activeDocumentType === 'registered' ? '등기부 등본' : '건축물 대장' }} 분석
                         </button>
                         <div 
                             v-if="(isAnalyzingRegistered && !typingRegistered) || (isAnalyzingLedger && !typingLedger)" 
@@ -217,20 +219,23 @@
                                     </p>
                                 </transition-group>
                                 <div class="progress-bar">
-                                    <div class="progress-bar-fill" :style="{ width: `${progressWidth}%` }"></div>
+                                    <div 
+                                        class="progress-bar-fill" 
+                                        :style="{ width: `${progressWidth}%` }"
+                                    />
                                 </div>
                             </div>
                         </div>
                         <div
-                            v-if="typingRegistered"
+                            v-if="typingRegistered || typingLedger"
                             class="result-text typing"
-                            v-html="renderMarkdown(typingRegistered.message)"
-                        ></div>
+                            v-html="renderMarkdown((activeDocumentType === 'registered' ? typingRegistered : typingLedger)?.message)"
+                        />
                         <div
-                            v-else-if="activeAnalysis.registeredResult"
+                            v-else-if="activeAnalysis[`${activeDocumentType}Result`]"
                             class="result-text"
-                            v-html="renderMarkdown(activeAnalysis.registeredResult)"
-                        ></div>
+                            v-html="renderMarkdown(activeAnalysis[`${activeDocumentType}Result`])"
+                        />
                     </div>
                 </div>
 
@@ -356,25 +361,26 @@ const analysisList = ref([])
 const activeAnalysis = ref(null)
 const isDeleteMode = ref(false)
 const selectedItems = ref([])
-const activeDocumentType = ref('registered') // 새로 추가된 상태
+const activeDocumentType = ref('registered')
+const showSummary = ref(false)
 
 const registeredInput = ref(null)
 const ledgerInput = ref(null)
 
-// 분석 상태 관리
+// Analysis states
 const isAnalyzingRegistered = ref(false)
 const isAnalyzingLedger = ref(false)
 const typingRegistered = ref(null)
 const typingLedger = ref(null)
+const typingSummary = ref(null)
 
-// 새로운 상태 변수들
+// New analysis states
 const newAnalysisName = ref('')
 const isCreatingNewAnalysis = ref(false)
 const isComposing = ref(false)
 const isCreating = ref(false)
 
-const typingSummary = ref(null)
-const showSummary = ref(false)
+
 const typingContent = computed(() => 
     activeDocumentType.value === 'registered' ? typingRegistered.value : typingLedger.value
 )
@@ -394,13 +400,11 @@ let messageInterval = null
 let dotInterval = null
 
 const startProgressAnimation = () => {
-    // 메시지 변경 타이머
     messageInterval = setInterval(() => {
         currentMessageIndex.value = (currentMessageIndex.value + 1) % analysisMessages.value.length
         progressWidth.value = ((currentMessageIndex.value * 3000) % (analysisMessages.value.length * 3000)) / (analysisMessages.value.length * 3000) * 100
     }, 3000)
 
-    // 점(...) 애니메이션 타이머
     dotInterval = setInterval(() => {
         dotCount.value = (dotCount.value % 3) + 1
     }, 500)
@@ -418,11 +422,9 @@ const stopProgressAnimation = () => {
 // 분석 상태와 타이핑 상태 모두를 감시
 watch([isAnalyzingRegistered, isAnalyzingLedger, typingRegistered, typingLedger], 
     ([newReg, newLedg, newTypeReg, newTypeLedg], [oldReg, oldLedg, oldTypeReg, oldTypeLedg]) => {
-        // 분석이 시작되고 아직 타이핑이 시작되지 않았을 때 애니메이션 시작
         if ((!oldReg && !oldLedg) && (newReg || newLedg) && !newTypeReg && !newTypeLedg) {
             startProgressAnimation()
         }
-        // 분석이 끝났거나 타이핑이 시작되면 애니메이션 정지
         if (((oldReg || oldLedg) && (!newReg && !newLedg)) || 
             (!oldTypeReg && !oldTypeLedg && (newTypeReg || newTypeLedg))) {
             stopProgressAnimation()
@@ -463,6 +465,7 @@ const renderMarkdown = (text) => {
 }
 
 // 타이핑 효과
+// Typing effect functions
 const startTypingEffect = async (message, type) => {
     const typingRef = type === 'registered' ? typingRegistered : typingLedger
     typingRef.value = {
@@ -486,11 +489,7 @@ const startTypingEffect = async (message, type) => {
                 typingLedger.value = null
                 isAnalyzingLedger.value = false
             }
-            // 메인 컨텐츠 타이핑 완료 후 요약 시작
-            startSummaryTypingEffect(type === 'registered' ? 
-                activeAnalysis.value.registeredSummary : 
-                activeAnalysis.value.ledgerSummary
-            )
+            startSummaryTypingEffect(activeAnalysis.value[`${type}Summary`])
         }
     }
 
@@ -519,6 +518,7 @@ const startSummaryTypingEffect = (summary) => {
 
     typeNextCharacter()
 }
+
 
 // 새 분석 생성 관련 함수들
 const startNewAnalysisCreation = () => {
@@ -552,6 +552,7 @@ const createNewAnalysis = async () => {
 const analyzeRegistered = async () => {
     if (isAnalyzingRegistered.value) return
 
+    showSummary.value = false
     isAnalyzingRegistered.value = true
     try {
         const response = await axios.get(
@@ -569,6 +570,7 @@ const analyzeRegistered = async () => {
 const analyzeLedger = async () => {
     if (isAnalyzingLedger.value) return
 
+    showSummary.value = false
     isAnalyzingLedger.value = true
     try {
         const response = await axios.get(
@@ -582,6 +584,7 @@ const analyzeLedger = async () => {
         isAnalyzingLedger.value = false
     }
 }
+
 
 const fetchAnalysisList = async () => {
     try {
