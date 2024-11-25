@@ -20,7 +20,7 @@ const formatPrice = (price) => {
 <template>
     <div class="product-card" :class="{ selected: isSelected }">
         <div class="image-container">
-            <!-- <img src="/api/placeholder/400/300" alt="매물 이미지" /> -->
+            <img :src="sale.saleImgUrl" alt="sale image" />
         </div>
         <div class="info-container">
             <div class="price">{{ formatPrice(sale.price) }}</div>

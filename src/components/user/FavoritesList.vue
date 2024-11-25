@@ -89,7 +89,7 @@ const handleInterestChanged = async () => {
         <h2 class="page-title">찜한 매물</h2>
 
         <div v-if="userStore.interestedSales.length === 0" class="empty-state">
-            찜한 매물이 없습니다.
+            찜한 상품이 없습니다.
         </div>
 
         <div v-else class="favorites">

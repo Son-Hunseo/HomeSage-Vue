@@ -80,7 +80,8 @@ const updateMapAndFetch = async () => {
         lng: Number(mapCenter.getLng().toFixed(6)),
     }
     zoomLevel.value = map.value.getLevel()
-    console.log(center.value.lat + ' ' + center.value.lng)
+    console.log('위도: ' + center.value.lat)
+    console.log('경도: ' + center.value.lng)
 
     // 현재 위치 기준으로 매물 데이터 조회
     await saleStore.fetchSalesByMapCenter(
