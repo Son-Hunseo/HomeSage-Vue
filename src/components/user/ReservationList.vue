@@ -1,14 +1,46 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/user-store'
 import { useAuthStore } from '@/stores/auth-store'
 import ProductDetail from '@/components/sale/ProductDetail.vue'
+import Pagination from '@/components/common/Pagination.vue'
+import { usePagination } from '@/composables/pagination'
+import { useProductModal } from '@/composables/useProductModal'
+import { formatDateTime, formatPrice } from '@/utils/formatters'
+import '@/assets/styles/common.css'
+import '@/assets/styles/list.css'
 
 const userStore = useUserStore()
 const authStore = useAuthStore()
 
-const showProductDetail = ref(false)
-const selectedSale = ref(null)
+// 페이지네이션 설정
+const {
+    currentPage,
+    paginatedItems: paginatedReservations,
+    totalPages,
+    changePage,
+    goToFirstPage,
+    goToLastPage,
+    prevPage,
+    nextPage,
+} = usePagination(computed(() => userStore.reservations))
+
+// 모달 관련 설정
+const { showProductDetail, selectedSale, openProductDetail, handleEscape, handleOverlayClick } =
+    useProductModal()
+
+// 예약 취소 처리
+const handleCancelReservation = async (saleId) => {
+    try {
+        const confirmation = confirm('예약을 취소하시겠습니까?')
+        if (confirmation) {
+            await userStore.cancelReservation(saleId)
+            alert('예약이 취소되었습니다.')
+        }
+    } catch (error) {
+        alert(error.message)
+    }
+}
 
 onMounted(async () => {
     if (!authStore.isAuthenticated) {
@@ -27,92 +59,29 @@ onMounted(async () => {
 onUnmounted(() => {
     document.removeEventListener('keydown', handleEscape)
 })
-
-const handleEscape = (e) => {
-    if (e.key === 'Escape') {
-        showProductDetail.value = false
-    }
-}
-
-const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('modal-overlay')) {
-        showProductDetail.value = false
-    }
-}
-
-const formatDateTime = (dateTimeStr) => {
-    const dateTime = new Date(dateTimeStr)
-    return dateTime.toLocaleString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    })
-}
-
-const formatPrice = (price) => {
-    return price?.toLocaleString('ko-KR') + '만원'
-}
-
-const handleCancelReservation = async (saleId) => {
-    try {
-        const confirmation = confirm('예약을 취소하시겠습니까?')
-        if (confirmation) {
-            await userStore.cancelReservation(saleId)
-            alert('예약이 취소되었습니다.')
-        }
-    } catch (error) {
-        alert(error.message)
-    }
-}
-
-const openProductDetail = (reservation) => {
-    const saleInfo = {
-        saleId: reservation.saleId,
-        providerUserId: reservation.providerUserId,
-        saleType: reservation.saleType,
-        homeType: reservation.homeType,
-        price: reservation.price,
-        monthlyFee: reservation.monthlyFee,
-        managementFee: reservation.managementFee,
-        space: reservation.space,
-        description: reservation.description,
-        floor: reservation.floor,
-        nearStation: reservation.nearStation,
-        city: reservation.city,
-        gu: reservation.gu,
-        dong: reservation.dong,
-        latitude: reservation.latitude,
-        longitude: reservation.longitude,
-        saleImgUrl: reservation.saleImgUrl,
-    }
-    selectedSale.value = saleInfo
-    showProductDetail.value = true
-}
 </script>
 
 <template>
-    <div class="reservation-list">
+    <div class="page-container">
         <h2 class="page-title">예약 목록</h2>
 
         <div v-if="userStore.reservations.length === 0" class="empty-state">
             예약된 매물이 없습니다.
         </div>
 
-        <div v-else class="reservations">
+        <div v-else class="list-container">
             <div
-                v-for="reservation in userStore.reservations"
+                v-for="reservation in paginatedReservations"
                 :key="`${reservation.saleId}-${reservation.reservationDatetime}`"
-                class="reservation-item"
+                class="list-item"
                 @click="openProductDetail(reservation)"
             >
                 <div class="reservation-info">
                     <div class="property-info">
                         <div class="main-info">
                             <span class="property-title">
-                                {{ reservation.saleType }} {{ reservation.homeType }}
+                                #{{ reservation.saleId }} {{ reservation.saleType }}
+                                {{ reservation.homeType }}
                             </span>
                             <span class="price">{{ formatPrice(reservation.price) }}</span>
                         </div>
@@ -133,6 +102,16 @@ const openProductDetail = (reservation) => {
                     </div>
                 </div>
             </div>
+
+            <Pagination
+                :current-page="currentPage"
+                :total-pages="totalPages"
+                @change-page="changePage"
+                @go-first="goToFirstPage"
+                @go-last="goToLastPage"
+                @prev-page="prevPage"
+                @next-page="nextPage"
+            />
         </div>
 
         <!-- ProductDetail 모달 -->
@@ -149,49 +128,6 @@ const openProductDetail = (reservation) => {
 </template>
 
 <style scoped>
-.reservation-list {
-    max-width: 1024px;
-    margin: 0 auto;
-    padding: 32px 24px;
-}
-
-.page-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 32px;
-    color: #2c3e50;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 48px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    color: #666;
-    font-size: 16px;
-}
-
-.reservations {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.reservation-item {
-    background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.reservation-item:hover {
-    border-color: #4a90e2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: #f8f9fa;
-}
-
 .reservation-info {
     display: flex;
     justify-content: space-between;
@@ -257,44 +193,7 @@ const openProductDetail = (reservation) => {
     color: white;
 }
 
-/* 모달 스타일 */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-container {
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
-    height: 90vh; /* 높이를 고정 */
-    background: white;
-    border-radius: 8px;
-    overflow: hidden; /* 컨테이너 자체는 overflow hidden */
-    display: flex; /* flex 추가 */
-    flex-direction: column; /* 세로 방향 정렬 */
-}
-
-/* ProductDetail 컴포넌트를 감싸는 div에 스크롤 적용 */
-.modal-container > :deep(.product-detail) {
-    height: 100%;
-    overflow-y: auto;
-}
-
-/* 반응형 스타일 */
 @media (max-width: 768px) {
-    .reservation-list {
-        padding: 24px 16px;
-    }
-
     .reservation-info {
         flex-direction: column;
         align-items: flex-start;
@@ -315,11 +214,6 @@ const openProductDetail = (reservation) => {
     .cancel-btn {
         padding: 6px 12px;
         font-size: 13px;
-    }
-
-    .modal-container {
-        width: 95%;
-        height: 90vh;
     }
 }
 </style>

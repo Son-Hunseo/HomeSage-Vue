@@ -1,5 +1,5 @@
 <script setup>
-import { defineEmits, ref, inject, watch } from 'vue'
+import { defineEmits, ref, inject, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -65,6 +65,22 @@ const signUp = async () => {
         router.push('/')
     })
 }
+
+// Esc 키 이벤트 핸들러
+const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+        emit('close')
+    }
+}
+
+// 컴포넌트 마운트/언마운트 시 이벤트 리스너 관리
+onMounted(() => {
+    document.addEventListener('keydown', handleEscape)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleEscape)
+})
 </script>
 
 <template>

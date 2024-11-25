@@ -103,7 +103,10 @@ const submitReservation = async (selectedDateTime) => {
                         <span class="tag">{{ sale.homeType }}</span>
                     </div>
                 </div>
-
+                <div class="provider-info">
+                    <span class="label">중개인</span>
+                    <span class="provider-name">{{ sale.providerUserName }}</span>
+                </div>
                 <div class="main-info">
                     <div class="info-row">
                         <span class="label">전/월세</span>
@@ -279,6 +282,19 @@ const submitReservation = async (selectedDateTime) => {
     border-radius: 16px;
     font-size: 14px;
     font-weight: 500;
+}
+
+.provider-info {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    gap: 16px;
+}
+
+.provider-name {
+    font-weight: 500;
+    color: #2c3e50;
 }
 
 .main-info {
