@@ -14,6 +14,7 @@ const currentSort = ref('high') // 'high' 또는 'low'
 
 // 정렬된 매물 목록
 const sortedSales = computed(() => {
+    console.log(sales.value)
     return [...sales.value].sort((a, b) => {
         if (currentSort.value === 'high') {
             return b.price - a.price // 가격 높은 순

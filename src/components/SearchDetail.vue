@@ -226,7 +226,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* Firefox에서 number input의 화살표 제거 */
-input[type='number'] {
+/* input[type='number'] {
     -moz-appearance: textfield;
-}
+} */
 </style>

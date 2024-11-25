@@ -2,9 +2,9 @@
 import { ref } from 'vue'
 import Header from '@/components/Header.vue'
 import Calendar from '@/components/user/Calendar.vue'
+import ProviderReserveList from '@/components/user/provider/ProviderReserveList.vue'
+import ProviderSaleUpload from '@/components/user/provider/ProviderSaleUpload.vue'
 import PasswordChange from '@/components/user/PasswordChange.vue'
-import ReservationList from '@/components/user/ReservationList.vue'
-import FavoritesList from '@/components/user/FavoritesList.vue'
 
 const activeTab = ref('calendar')
 </script>
@@ -18,13 +18,7 @@ const activeTab = ref('calendar')
                     @click="activeTab = 'calendar'"
                     :class="{ active: activeTab === 'calendar' }"
                 >
-                    달력
-                </button>
-                <button
-                    @click="activeTab = 'password'"
-                    :class="{ active: activeTab === 'password' }"
-                >
-                    비밀번호 변경
+                    예약 일정표
                 </button>
                 <button
                     @click="activeTab = 'reservations'"
@@ -33,18 +27,24 @@ const activeTab = ref('calendar')
                     예약목록
                 </button>
                 <button
-                    @click="activeTab = 'favorites'"
-                    :class="{ active: activeTab === 'favorites' }"
+                    @click="activeTab = 'saleUpload'"
+                    :class="{ active: activeTab === 'saleUpload' }"
                 >
-                    찜목록
+                    매물 등록
+                </button>
+                <button
+                    @click="activeTab = 'password'"
+                    :class="{ active: activeTab === 'password' }"
+                >
+                    비밀번호 변경
                 </button>
             </nav>
 
             <main class="mypage-content">
                 <Calendar v-if="activeTab === 'calendar'" />
+                <ProviderReserveList v-if="activeTab === 'reservations'" />
+                <ProviderSaleUpload v-if="activeTab === 'saleUpload'" />
                 <PasswordChange v-if="activeTab === 'password'" />
-                <ReservationList v-if="activeTab === 'reservations'" />
-                <FavoritesList v-if="activeTab === 'favorites'" />
             </main>
         </div>
     </div>

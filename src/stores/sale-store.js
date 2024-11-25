@@ -57,7 +57,7 @@ export const useSaleStore = defineStore('saleStore', () => {
             }
 
             sales.value = processSalesData(response.data)
-            console.log(`Found ${sales.value.length} properties by map search`)
+            // console.log(`Found ${sales.value.length} properties by map search`)
         } catch (err) {
             console.error('Map search failed:', err)
             error.value = '매물을 불러오는데 실패했습니다.'
@@ -89,7 +89,7 @@ export const useSaleStore = defineStore('saleStore', () => {
             sales.value = processSalesData(response.data)
             console.log(`Found ${sales.value.length} properties by search`)
         } catch (err) {
-            console.error('Search failed:', err)
+            // console.error('Search failed:', err)
             error.value = '매물을 검색하는데 실패했습니다.'
             sales.value = []
         } finally {
@@ -99,6 +99,37 @@ export const useSaleStore = defineStore('saleStore', () => {
 
     const hasSales = computed(() => sales.value.length > 0)
     const hasSelected = computed(() => selectedSale.value !== null)
+
+    // 매물 업로드
+    const uploadSale = async (saleData, imageFile) => {
+        try {
+            loading.value = true
+            error.value = null
+
+            const formData = new FormData()
+            formData.append('file', imageFile)
+            formData.append(
+                'data',
+                new Blob([JSON.stringify(saleData)], {
+                    type: 'application/json',
+                }),
+            )
+
+            await axios.post('/sales/provider/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            })
+
+            return true
+        } catch (err) {
+            console.error('Upload failed:', err)
+            error.value = '매물 등록에 실패했습니다.'
+            throw err
+        } finally {
+            loading.value = false
+        }
+    }
 
     return {
         sales,
@@ -116,5 +147,6 @@ export const useSaleStore = defineStore('saleStore', () => {
         clearSelectedSale: () => {
             selectedSale.value = null
         },
+        uploadSale,
     }
 })
