@@ -738,12 +738,12 @@ onMounted(fetchAnalysisList)
 .result-text :deep(h6),
 .result-text :deep(blockquote) {
     margin: 0;
-    line-height: 0;
+    line-height: 1.7;
 }
 
 .result-text :deep(li) {
     margin: 0;
-    line-height: 1.7;
+    line-height: 0;
 }
 
 .result-text :deep(ul),
