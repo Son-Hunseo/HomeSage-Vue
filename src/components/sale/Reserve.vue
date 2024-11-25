@@ -1,16 +1,48 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useCalendarStore } from '@/stores/calendar-store'
+import { useSaleStore } from '@/stores/sale-store'
 
 const props = defineProps({
     show: {
         type: Boolean,
         required: true,
     },
+    saleId: {
+        type: Number,
+        required: true,
+    },
 })
 
 const emit = defineEmits(['close', 'submit'])
 const calendarStore = useCalendarStore()
+const saleStore = useSaleStore()
+const reservedDateTimes = ref([])
+
+// 예약된 시간 조회
+const fetchReservedTimes = async () => {
+    if (!props.show || !props.saleId) return
+
+    const times = await saleStore.fetchReservedTimes(props.saleId)
+    reservedDateTimes.value = times.map((datetime) => {
+        const date = datetime.split('T')[0]
+        const time = datetime.split('T')[1].substring(0, 5)
+        return { date, time }
+    })
+}
+
+// 특정 시간이 예약 가능한지 확인
+const isTimeAvailable = (time) => {
+    if (!calendarStore.selectedDate) return true
+
+    const selectedDateStr = `${calendarStore.selectedDate.year}-${String(
+        calendarStore.selectedDate.month,
+    ).padStart(2, '0')}-${String(calendarStore.selectedDate.date).padStart(2, '0')}`
+
+    return !reservedDateTimes.value.some(
+        (reserved) => reserved.date === selectedDateStr && reserved.time === time,
+    )
+}
 
 const handleSubmit = () => {
     const selectedDateTime = calendarStore.getFormattedSelection()
@@ -20,6 +52,56 @@ const handleSubmit = () => {
     }
     emit('submit', selectedDateTime)
 }
+
+// watch 설정
+watch(
+    () => props.show,
+    async (newValue) => {
+        if (newValue) {
+            // 현재 날짜 객체 생성
+            const today = new Date()
+            // 오늘 날짜 자동 선택
+            calendarStore.selectDate({
+                year: today.getFullYear(),
+                month: today.getMonth() + 1,
+                date: today.getDate(),
+                isCurrentMonth: true,
+                isPast: false,
+            })
+            // 날짜 선택 후 예약 시간 조회
+            await fetchReservedTimes()
+        } else {
+            // 모달이 닫힐 때 선택값 초기화
+            calendarStore.resetSelection()
+        }
+    },
+)
+
+// 날짜 변경 시에만 예약 시간 다시 조회
+watch(
+    () => calendarStore.selectedDate,
+    async (newDate, oldDate) => {
+        // 초기 설정이 아닌 실제 날짜 변경 시에만 조회
+        if (props.show && newDate && JSON.stringify(newDate) !== JSON.stringify(oldDate)) {
+            await fetchReservedTimes()
+        }
+    },
+)
+
+// Esc 키 이벤트 핸들러
+const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+        emit('close')
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('keydown', handleEscape)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleEscape)
+})
 </script>
 
 <template>
@@ -75,7 +157,11 @@ const handleSubmit = () => {
                             v-for="time in calendarStore.morningTimes"
                             :key="time"
                             class="time-btn"
-                            :class="{ selected: calendarStore.selectedTime === time }"
+                            :class="{
+                                selected: calendarStore.selectedTime === time,
+                                disabled: !isTimeAvailable(time),
+                            }"
+                            :disabled="!isTimeAvailable(time)"
                             @click="calendarStore.selectTime(time)"
                         >
                             {{ time }}
@@ -87,7 +173,11 @@ const handleSubmit = () => {
                             v-for="time in calendarStore.afternoonTimes"
                             :key="time"
                             class="time-btn"
-                            :class="{ selected: calendarStore.selectedTime === time }"
+                            :class="{
+                                selected: calendarStore.selectedTime === time,
+                                disabled: !isTimeAvailable(time),
+                            }"
+                            :disabled="!isTimeAvailable(time)"
                             @click="calendarStore.selectTime(time)"
                         >
                             {{ time }}
@@ -257,7 +347,7 @@ const handleSubmit = () => {
     transition: all 0.2s ease;
 }
 
-.time-btn:hover:not(.selected) {
+.time-btn:hover:not(.disabled) {
     background: #f5f5f5;
 }
 
@@ -265,6 +355,17 @@ const handleSubmit = () => {
     background: #4a90e2;
     color: white;
     border-color: #4a90e2;
+}
+
+.time-btn.disabled {
+    background: #f5f5f5;
+    color: #ccc;
+    cursor: not-allowed;
+    border-color: #e5e5e5;
+}
+
+.time-btn.disabled:hover {
+    background: #f5f5f5;
 }
 
 .modal-actions {

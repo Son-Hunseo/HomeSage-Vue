@@ -131,6 +131,22 @@ export const useSaleStore = defineStore('saleStore', () => {
         }
     }
 
+    const fetchReservedTimes = async (saleId) => {
+        try {
+            loading.value = true
+            error.value = null
+
+            const response = await axios.get(`/sales/reserve/${saleId}`)
+            return response.data // LocalDateTime 배열
+        } catch (err) {
+            // console.error('Reserved times fetch failed:', err)
+            error.value = '예약된 시간을 조회하는데 실패했습니다.'
+            return []
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         sales,
         loading,
@@ -148,5 +164,6 @@ export const useSaleStore = defineStore('saleStore', () => {
             selectedSale.value = null
         },
         uploadSale,
+        fetchReservedTimes,
     }
 })

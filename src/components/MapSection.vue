@@ -138,14 +138,13 @@ const onLoadKakaoMap = (mapInstance) => {
  * 마커 클릭 시 상세 정보 표시
  */
 const handleMarkerClick = (sale) => {
-    saleStore.setSelectedSale(sale)
-}
-
-/**
- * 상세 정보 닫기
- */
-const handleCloseDetail = () => {
-    saleStore.clearSelectedSale()
+    // 이미 선택된 매물을 다시 클릭한 경우 선택 해제
+    if (selectedSale.value?.saleId === sale.saleId) {
+        saleStore.clearSelectedSale()
+    } else {
+        // 다른 매물을 클릭한 경우 선택
+        saleStore.setSelectedSale(sale)
+    }
 }
 
 /**
@@ -212,12 +211,15 @@ const isInfoWindowVisible = (saleId) => {
 }
 
 :deep(.marker-info) {
-    padding: 5px 10px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    border: 1px solid #ddd;
+    margin: 0 40px;
+    padding: 7px 5px;
+    /* background: rgba(255, 255, 255, 0.9); */
+    /* border-radius: 4px; */
+    /* border: 1px solid #ddd; */
     font-size: 12px;
     font-weight: bold;
+    text-align: center;
+    display: inline-block;
 }
 
 .map-detail-section {
