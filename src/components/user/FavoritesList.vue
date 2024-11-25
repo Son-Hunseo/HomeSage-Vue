@@ -1,14 +1,50 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/user-store'
 import { useAuthStore } from '@/stores/auth-store'
 import ProductDetail from '@/components/sale/ProductDetail.vue'
+import Pagination from '@/components/common/Pagination.vue'
+import { usePagination } from '@/composables/pagination'
+import { useProductModal } from '@/composables/useProductModal'
+import { formatPrice } from '@/utils/formatters'
+import '@/assets/styles/common.css'
+import '@/assets/styles/list.css'
 
 const userStore = useUserStore()
 const authStore = useAuthStore()
 
-const showProductDetail = ref(false)
-const selectedSale = ref(null)
+// 페이지네이션 설정
+const {
+    currentPage,
+    paginatedItems: paginatedSales,
+    totalPages,
+    changePage,
+    goToFirstPage,
+    goToLastPage,
+    prevPage,
+    nextPage,
+} = usePagination(computed(() => userStore.interestedSales))
+
+// 모달 관련 설정
+const { showProductDetail, selectedSale, openProductDetail, handleEscape, handleOverlayClick } =
+    useProductModal()
+
+// 찜 해제 처리
+const handleRemoveFavorite = async (saleId) => {
+    try {
+        const confirmation = confirm('찜 목록에서 삭제하시겠습니까?')
+        if (confirmation) {
+            await userStore.toggleInterest(saleId)
+            await userStore.fetchInterestedSales()
+        }
+    } catch (error) {
+        alert(error.message)
+    }
+}
+
+const handleInterestChanged = async () => {
+    await userStore.fetchInterestedSales()
+}
 
 onMounted(async () => {
     if (!authStore.isAuthenticated) {
@@ -27,84 +63,28 @@ onMounted(async () => {
 onUnmounted(() => {
     document.removeEventListener('keydown', handleEscape)
 })
-
-const handleEscape = (e) => {
-    if (e.key === 'Escape') {
-        showProductDetail.value = false
-    }
-}
-
-const handleOverlayClick = (e) => {
-    if (e.target.classList.contains('modal-overlay')) {
-        showProductDetail.value = false
-    }
-}
-
-const formatPrice = (price) => {
-    if (price === null || price === undefined) return '-'
-    return price.toLocaleString('ko-KR') + '만원'
-}
-
-const handleRemoveFavorite = async (saleId) => {
-    try {
-        const confirmation = confirm('찜 목록에서 삭제하시겠습니까?')
-        if (confirmation) {
-            await userStore.toggleInterest(saleId)
-            await userStore.fetchInterestedSales()
-        }
-    } catch (error) {
-        alert(error.message)
-    }
-}
-
-const openProductDetail = (sale) => {
-    selectedSale.value = {
-        saleId: sale.saleId,
-        providerUserId: sale.providerUserId,
-        saleType: sale.saleType,
-        homeType: sale.homeType,
-        price: sale.price,
-        monthlyFee: sale.monthlyFee,
-        managementFee: sale.managementFee,
-        space: sale.space,
-        description: sale.description,
-        floor: sale.floor,
-        nearStation: sale.nearStation,
-        city: sale.city,
-        gu: sale.gu,
-        dong: sale.dong,
-        latitude: Number(sale.latitude),
-        longitude: Number(sale.longitude),
-        saleImgUrl: sale.saleImgUrl,
-    }
-    showProductDetail.value = true
-}
-
-const handleInterestChanged = async () => {
-    await userStore.fetchInterestedSales()
-}
 </script>
 
 <template>
-    <div class="favorites-list">
+    <div class="page-container">
         <h2 class="page-title">찜한 상품</h2>
 
         <div v-if="userStore.interestedSales.length === 0" class="empty-state">
             찜한 상품이 없습니다.
         </div>
 
-        <div v-else class="favorites">
+        <div v-else class="list-container">
             <div
-                v-for="sale in userStore.interestedSales"
+                v-for="sale in paginatedSales"
                 :key="sale.UserInterestedSaleId"
-                class="favorite-item"
+                class="list-item"
                 @click="openProductDetail(sale)"
             >
                 <div class="sale-info">
                     <div class="property-info">
                         <div class="main-info">
                             <span class="property-title">
-                                {{ sale.saleType }} {{ sale.homeType }}
+                                #{{ sale.saleId }} {{ sale.saleType }} {{ sale.homeType }}
                             </span>
                             <span class="price">{{ formatPrice(sale.price) }}</span>
                         </div>
@@ -125,6 +105,16 @@ const handleInterestChanged = async () => {
                     </div>
                 </div>
             </div>
+
+            <Pagination
+                :current-page="currentPage"
+                :total-pages="totalPages"
+                @change-page="changePage"
+                @go-first="goToFirstPage"
+                @go-last="goToLastPage"
+                @prev-page="prevPage"
+                @next-page="nextPage"
+            />
         </div>
 
         <!-- ProductDetail 모달 -->
@@ -145,49 +135,7 @@ const handleInterestChanged = async () => {
 </template>
 
 <style scoped>
-.favorites-list {
-    max-width: 1024px;
-    margin: 0 auto;
-    padding: 32px 24px;
-}
-
-.page-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 32px;
-    color: #2c3e50;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 48px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    color: #666;
-    font-size: 16px;
-}
-
-.favorites {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.favorite-item {
-    background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.favorite-item:hover {
-    border-color: #4a90e2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: #f8f9fa;
-}
-
+/* 컴포넌트 고유의 스타일 */
 .sale-info {
     display: flex;
     justify-content: space-between;
@@ -265,43 +213,7 @@ const handleInterestChanged = async () => {
     color: white;
 }
 
-/* 모달 스타일 */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-container {
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
-    height: 90vh;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-container > :deep(.product-detail) {
-    height: 100%;
-    overflow-y: auto;
-}
-
-/* 반응형 스타일 */
 @media (max-width: 768px) {
-    .favorites-list {
-        padding: 24px 16px;
-    }
-
     .sale-info {
         flex-direction: column;
     }
@@ -314,11 +226,6 @@ const handleInterestChanged = async () => {
         margin-top: 12px;
         padding-top: 12px;
         border-top: 1px solid #eee;
-    }
-
-    .modal-container {
-        width: 95%;
-        height: 90vh;
     }
 }
 </style>

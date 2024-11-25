@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth-store'
 
@@ -22,11 +22,28 @@ const login = async () => {
     emit('close') // 모달 닫기
     router.push('/') // 홈으로 이동
 }
+
+// Esc 키 이벤트 핸들러
+const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+        emit('close')
+    }
+}
+
+// 컴포넌트 마운트/언마운트 시 이벤트 리스너 관리
+onMounted(() => {
+    document.addEventListener('keydown', handleEscape)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('keydown', handleEscape)
+})
 </script>
 
 <template>
     <div class="modal-overlay" @click.self="emit('close')">
         <div class="modal">
+            <button class="close-btn" @click="emit('close')">&times;</button>
             <h2>HomeSage</h2>
             <form @submit.prevent="login">
                 <input
@@ -71,6 +88,17 @@ const login = async () => {
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+    color: #333;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 input {

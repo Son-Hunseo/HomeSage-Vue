@@ -1,13 +1,11 @@
 <!-- MyPage.vue -->
 <script setup>
 import { onMounted, watchEffect } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth-store'
 import ConsumerMyPage from '@/components/user/ConsumerMyPage.vue'
 import ProviderMyPage from '@/components/user/provider/ProviderMyPage.vue'
 
 const authStore = useAuthStore()
-const router = useRouter()
 
 // userRole이 변경될 때마다 실행
 watchEffect(() => {

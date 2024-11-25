@@ -133,7 +133,7 @@ export const useUserStore = defineStore('user', () => {
                 withCredentials: true,
             })
             providerReservations.value = response.data || []
-            console.log(providerReservations.value)
+            // console.log(providerReservations.value)
         } catch (error) {
             // console.error('판매자 예약 목록 조회 중 오류 발생:', error)
             providerReservations.value = []

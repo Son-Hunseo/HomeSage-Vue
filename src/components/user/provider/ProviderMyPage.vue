@@ -5,6 +5,7 @@ import ProviderCalendar from '@/components/user/provider/ProviderCalendar.vue'
 import ProviderReserveList from '@/components/user/provider/ProviderReserveList.vue'
 import ProviderSaleUpload from '@/components/user/provider/ProviderSaleUpload.vue'
 import PasswordChange from '@/components/user/PasswordChange.vue'
+import '@/assets/styles/mypage.css'
 
 const activeTab = ref('providerCalendar')
 </script>
@@ -50,37 +51,4 @@ const activeTab = ref('providerCalendar')
     </div>
 </template>
 
-<style scoped>
-.mypage-container {
-    display: flex;
-    height: calc(100vh - 80px); /* 헤더 높이 제외 */
-}
-
-.mypage-nav {
-    width: 200px;
-    background-color: #f4f4f4;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.mypage-nav button {
-    padding: 1rem;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.mypage-nav button.active,
-.mypage-nav button:hover {
-    background-color: #e0e0e0;
-}
-
-.mypage-content {
-    flex-grow: 1;
-    padding: 1rem;
-    overflow-y: auto;
-}
-</style>
+<style scoped></style>
