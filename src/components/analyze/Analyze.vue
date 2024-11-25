@@ -819,7 +819,7 @@ onMounted(fetchAnalysisList)
 .result-text :deep(h6),
 .result-text :deep(blockquote) {
     margin: 0;
-    line-height: 1.7;
+    line-height: 1.5;
 }
 
 .result-text :deep(li) {
@@ -848,11 +848,11 @@ onMounted(fetchAnalysisList)
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;  /* 1.5rem에서 증가 */
 }
 
 .progress-messages {
-    height: 60px;
+    height: 80px;  /* 60px에서 증가 */
     width: 100%;
     position: relative;
     overflow: hidden;
@@ -862,7 +862,8 @@ onMounted(fetchAnalysisList)
     position: absolute;
     width: 100%;
     text-align: center;
-    font-size: 1rem;
+    font-size: 1.25rem;  /* 더 크게 변경 */
+    font-weight: 500;    /* 글씨를 약간 더 굵게 */
     color: #4a5568;
 }
 
@@ -882,17 +883,17 @@ onMounted(fetchAnalysisList)
 }
 
 .progress-bar {
-    width: 200px;
-    height: 4px;
+    width: 300px;      /* 너비도 좀 더 넓게 */
+    height: 8px;       /* 높이를 2배로 */
     background-color: #e2e8f0;
-    border-radius: 2px;
+    border-radius: 4px; /* 모서리도 약간 더 둥글게 */
     overflow: hidden;
 }
 
 .progress-bar-fill {
     height: 100%;
     background-color: #4A90E2;
-    border-radius: 2px;
+    border-radius: 4px; /* 이것도 맞춰서 수정 */
     transition: width 0.3s ease-out;
 }
 </style>
