@@ -89,7 +89,7 @@ export const useSaleStore = defineStore('saleStore', () => {
             sales.value = processSalesData(response.data)
             console.log(`Found ${sales.value.length} properties by search`)
         } catch (err) {
-            console.error('Search failed:', err)
+            // console.error('Search failed:', err)
             error.value = '매물을 검색하는데 실패했습니다.'
             sales.value = []
         } finally {

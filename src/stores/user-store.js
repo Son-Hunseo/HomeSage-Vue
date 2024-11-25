@@ -16,7 +16,7 @@ export const useUserStore = defineStore('user', () => {
         try {
             const response = await axios.get('/user/interest/list', { withCredentials: true })
             interestedSales.value = response.data || []
-            console.log(interestedSales.value)
+            // console.log(interestedSales.value)
         } catch (error) {
             // console.error('찜 목록 조회 중 오류 발생:', error)
             interestedSales.value = []
@@ -36,7 +36,7 @@ export const useUserStore = defineStore('user', () => {
         try {
             const response = await axios.get('/user/reserve/list', { withCredentials: true })
             reservations.value = response.data || [] // null이나 undefined일 경우 빈 배열 할당
-            console.log(reservations.value)
+            // console.log(reservations.value)
         } catch (error) {
             // console.error('예약 목록 조회 중 오류 발생:', error)
             reservations.value = []
