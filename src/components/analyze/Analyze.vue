@@ -124,10 +124,26 @@
                         >
                             등기부 등본 분석
                         </button>
-                        <div v-if="isAnalyzingRegistered" class="loading-dots">
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
+                        <div v-if="isAnalyzingRegistered || isAnalyzingLedger" class="analysis-progress">
+                            <div class="progress-container">
+                                <transition-group 
+                                    name="slide-up" 
+                                    tag="div" 
+                                    class="progress-messages"
+                                >
+                                    <p 
+                                        v-for="(message, index) in analysisMessages" 
+                                        :key="message"
+                                        v-show="currentMessageIndex === index"
+                                        class="progress-message"
+                                    >
+                                        {{ message }}{{ '.'.repeat(dotCount) }}
+                                    </p>
+                                </transition-group>
+                                <div class="progress-bar">
+                                    <div class="progress-bar-fill" :style="{ width: `${progressWidth}%` }"></div>
+                                </div>
+                            </div>
                         </div>
                         <div
                             v-if="typingRegistered"
@@ -171,10 +187,26 @@
                         >
                             건축물 대장 분석
                         </button>
-                        <div v-if="isAnalyzingLedger" class="loading-dots">
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
+                        <div v-if="isAnalyzingRegistered || isAnalyzingLedger" class="analysis-progress">
+                            <div class="progress-container">
+                                <transition-group 
+                                    name="slide-up" 
+                                    tag="div" 
+                                    class="progress-messages"
+                                >
+                                    <p 
+                                        v-for="(message, index) in analysisMessages" 
+                                        :key="message"
+                                        v-show="currentMessageIndex === index"
+                                        class="progress-message"
+                                    >
+                                        {{ message }}{{ '.'.repeat(dotCount) }}
+                                    </p>
+                                </transition-group>
+                                <div class="progress-bar">
+                                    <div class="progress-bar-fill" :style="{ width: `${progressWidth}%` }"></div>
+                                </div>
+                            </div>
                         </div>
                         <div
                             v-if="typingLedger"
@@ -197,7 +229,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, nextTick } from 'vue'
+import { ref, onMounted, inject, nextTick, watch, onUnmounted } from 'vue'
 import Header from '@/components/Header.vue'
 import MarkdownIt from 'markdown-it'
 
@@ -224,6 +256,55 @@ const newAnalysisName = ref('')
 const isCreatingNewAnalysis = ref(false)
 const isComposing = ref(false)
 const isCreating = ref(false)
+
+// 분석 진행 상태 관련 상태 추가
+const analysisMessages = ref([
+    '문서를 스캔하는 중입니다',
+    '안심전세 포털의 부동산 사기 사례들을 참조하는 중입니다',
+    '부동산 용어집을 참조하는 중입니다'
+])
+const currentMessageIndex = ref(0)
+const dotCount = ref(1)
+const progressWidth = ref(0)
+
+// 메시지 및 진행률 업데이트를 위한 타이머 관리
+let messageInterval = null
+let dotInterval = null
+
+const startProgressAnimation = () => {
+    // 메시지 변경 타이머
+    messageInterval = setInterval(() => {
+        currentMessageIndex.value = (currentMessageIndex.value + 1) % analysisMessages.value.length
+        progressWidth.value = ((currentMessageIndex.value * 3000) % (analysisMessages.value.length * 3000)) / (analysisMessages.value.length * 3000) * 100
+    }, 3000)
+
+    // 점(...) 애니메이션 타이머
+    dotInterval = setInterval(() => {
+        dotCount.value = (dotCount.value % 3) + 1
+    }, 500)
+}
+
+const stopProgressAnimation = () => {
+    if (messageInterval) clearInterval(messageInterval)
+    if (dotInterval) clearInterval(dotInterval)
+    currentMessageIndex.value = 0
+    dotCount.value = 1
+    progressWidth.value = 0
+}
+
+// 분석 상태 변경 감시
+watch([isAnalyzingRegistered, isAnalyzingLedger], ([newReg, newLedg], [oldReg, oldLedg]) => {
+    if ((!oldReg && !oldLedg) && (newReg || newLedg)) {
+        startProgressAnimation()
+    } else if ((oldReg || oldLedg) && (!newReg && !newLedg)) {
+        stopProgressAnimation()
+    }
+})
+
+// 컴포넌트 언마운트 시 타이머 정리
+onUnmounted(() => {
+    stopProgressAnimation()
+})
 
 // 엔터 키 핸들러 추가
 const handleEnterKey = () => {
@@ -750,5 +831,68 @@ onMounted(fetchAnalysisList)
 .result-text :deep(ol) {
     padding-left: 1.5em;
     margin: 0;
+}
+
+/* Analysis Progress Styles */
+.analysis-progress {
+    width: 100%;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-container {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.progress-messages {
+    height: 60px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-message {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+    color: #4a5568;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+    transition: all 0.5s ease;
+}
+
+.slide-up-enter-from {
+    transform: translateY(100%);
+    opacity: 0;
+}
+
+.slide-up-leave-to {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 4px;
+    background-color: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #4A90E2;
+    border-radius: 2px;
+    transition: width 0.3s ease-out;
 }
 </style>
