@@ -128,12 +128,12 @@ const logout = async () => {
 }
 
 .btn-mypage {
-    background: #8b4513;
+    background: #007bff;
     color: white;
 }
 
 .btn-logout {
-    background: #BC8F8F;
-    color: white;
+    background: white;
+    border: 1px solid #ddd;
 }
 </style>

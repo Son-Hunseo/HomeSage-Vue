@@ -1,105 +1,162 @@
 <script setup>
+// 필요한 모듈 import
 import { ref, watch } from 'vue'
 import { KakaoMap, KakaoMapMarker } from 'vue3-kakao-maps'
 import { useSaleStore } from '@/stores/sale-store'
 import { storeToRefs } from 'pinia'
+import ProductDetail from '@/components/sale/ProductDetail.vue'
 
+// Pinia store 및 상태 설정
 const saleStore = useSaleStore()
 const { sales, selectedSale, loading, isSearchMode } = storeToRefs(saleStore)
 
-const map = ref(null)
+// 지도 관련 상태 정의
+const map = ref(null) // 카카오맵 인스턴스
 const center = ref({
+    // 지도 중심 좌표
     lat: 37.5665,
     lng: 126.978,
 })
-const zoomLevel = ref(5)
+const zoomLevel = ref(5) // 지도 줌 레벨
+let isMoving = false // 지도 이동/줌 중인지 추적하는 플래그
 
+/**
+ * 줌 레벨에 따른 검색 반경 계산
+ * @param {number} level - 현재 지도의 줌 레벨
+ * @returns {number} - 계산된 검색 반경
+ */
 const calculateRadius = (level) => {
     const baseRadius = 100
     const multiplier = Math.pow(2, level - 1)
     return baseRadius * multiplier
 }
 
-// 지도 이동에 의한 데이터 갱신
-watch(
-    [center, zoomLevel],
-    async ([newCenter, newLevel]) => {
-        if (isSearchMode.value || !newCenter || !newLevel) return
-        console.log('Map moved, fetching new data...')
-        await saleStore.fetchSalesByMapCenter(
-            newCenter.lat,
-            newCenter.lng,
-            calculateRadius(newLevel),
-        )
-    },
-    { deep: true },
-)
-
-// sales 변경 감지 및 지도 이동
+/**
+ * 검색 결과에 따른 지도 이동 처리
+ * isSearchMode가 true일 때만 동작
+ */
 watch(
     sales,
     (newSales) => {
         if (!isSearchMode.value || !newSales.length || !map.value) return
 
-        console.log('Moving map to search results...')
-
-        // 첫 번째 매물 위치로 이동
+        // 첫 번째 매물 위치로 지도 중심 이동
         const firstSale = newSales[0]
-        const moveLatLng = new kakao.maps.LatLng(firstSale.latitude, firstSale.longitude)
-        map.value.setCenter(moveLatLng)
+        const moveLatLng = new kakao.maps.LatLng(
+            Number(firstSale.latitude),
+            Number(firstSale.longitude),
+        )
 
-        // 모든 매물이 보이도록 범위 조정
+        // 모든 매물이 보이도록 지도 영역 설정
         const bounds = new kakao.maps.LatLngBounds()
         newSales.forEach((sale) => {
-            bounds.extend(new kakao.maps.LatLng(sale.latitude, sale.longitude))
-        })
-        map.value.setBounds(bounds)
-
-        console.log('Map moved to:', {
-            lat: firstSale.latitude,
-            lng: firstSale.longitude,
+            bounds.extend(new kakao.maps.LatLng(Number(sale.latitude), Number(sale.longitude)))
         })
 
+        // 지도 이동 및 영역 설정
+        map.value.setCenter(moveLatLng)
+        map.value.setBounds(bounds, {
+            padding: 50, // 마커와 지도 경계 사이 여백
+        })
+
+        // 검색 모드 종료
         setTimeout(() => {
             isSearchMode.value = false
-            console.log('Search mode disabled')
         }, 500)
     },
     { immediate: true },
 )
 
-const updateMapInfo = () => {
+/**
+ * 지도 정보 업데이트 및 매물 데이터 조회
+ * 지도 이동이 끝난 후 호출됨
+ */
+const updateMapAndFetch = async () => {
     if (isSearchMode.value || !map.value) return
 
+    // 현재 지도 중심 좌표 업데이트
     const mapCenter = map.value.getCenter()
     center.value = {
-        lat: mapCenter.getLat(),
-        lng: mapCenter.getLng(),
+        lat: Number(mapCenter.getLat().toFixed(6)),
+        lng: Number(mapCenter.getLng().toFixed(6)),
     }
     zoomLevel.value = map.value.getLevel()
+
+    // 현재 위치 기준으로 매물 데이터 조회
+    await saleStore.fetchSalesByMapCenter(
+        center.value.lat,
+        center.value.lng,
+        calculateRadius(zoomLevel.value),
+    )
 }
 
+/**
+ * 카카오맵 로드 완료 시 호출되는 핸들러
+ * @param {object} mapInstance - 카카오맵 인스턴스
+ */
 const onLoadKakaoMap = (mapInstance) => {
     map.value = mapInstance
+
+    // 지도 타입 컨트롤 추가
     const mapTypeControl = new kakao.maps.MapTypeControl()
     map.value.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT)
-    updateMapInfo()
-    kakao.maps.event.addListener(map.value, 'idle', updateMapInfo)
-}
 
-const handleMarkerClick = (sale) => {
-    // 이미 선택된 매물을 다시 클릭하면 선택 해제
-    if (selectedSale.value?.saleId === sale.saleId) {
-        saleStore.clearSelectedSale()
-    } else {
-        saleStore.setSelectedSale(sale)
+    // 초기 지도 정보 설정
+    const initialCenter = map.value.getCenter()
+    center.value = {
+        lat: Number(initialCenter.getLat().toFixed(6)),
+        lng: Number(initialCenter.getLng().toFixed(6)),
     }
+    zoomLevel.value = map.value.getLevel()
+
+    // 초기 데이터 조회
+    updateMapAndFetch()
+
+    // 지도 이벤트 리스너 등록
+    kakao.maps.event.addListener(map.value, 'dragstart', () => {
+        isMoving = true
+    })
+
+    kakao.maps.event.addListener(map.value, 'dragend', () => {
+        isMoving = false
+        updateMapAndFetch()
+    })
+
+    kakao.maps.event.addListener(map.value, 'zoom_started', () => {
+        isMoving = true
+    })
+
+    kakao.maps.event.addListener(map.value, 'zoom_changed', () => {
+        if (!isMoving) {
+            updateMapAndFetch()
+        }
+    })
 }
 
+/**
+ * 마커 클릭 시 상세 정보 표시
+ */
+const handleMarkerClick = (sale) => {
+    saleStore.setSelectedSale(sale)
+}
+
+/**
+ * 상세 정보 닫기
+ */
+const handleCloseDetail = () => {
+    saleStore.clearSelectedSale()
+}
+
+/**
+ * 가격 포맷팅 (ex: 1,000만원)
+ */
 const formatPrice = (price) => {
     return price?.toLocaleString('ko-KR') + '만원'
 }
 
+/**
+ * 마커의 인포윈도우 표시 여부 결정
+ */
 const isInfoWindowVisible = (saleId) => {
     return selectedSale.value?.saleId === saleId
 }
@@ -131,6 +188,15 @@ const isInfoWindowVisible = (saleId) => {
                 />
             </template>
         </KakaoMap>
+
+        <Transition name="slide">
+            <ProductDetail
+                v-if="selectedSale"
+                :sale="selectedSale"
+                @close="handleCloseDetail"
+                class="map-detail-section"
+            />
+        </Transition>
     </div>
 </template>
 
@@ -171,5 +237,15 @@ const isInfoWindowVisible = (saleId) => {
     background: white;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+    transition: transform 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+    transform: translateX(100%);
 }
 </style>
