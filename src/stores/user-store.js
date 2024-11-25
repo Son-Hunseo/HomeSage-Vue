@@ -93,7 +93,7 @@ export const useUserStore = defineStore('user', () => {
             if (error.response && error.response.status === 500) {
                 throw new Error('이미 예약된 매물입니다.')
             }
-            throw new Error('예약 처리 중 오류가 발생했습니다.')
+            throw new Error('이미 예약한 시간입니다.')
         }
     }
 
