@@ -18,10 +18,11 @@ export const useUserStore = defineStore('user', () => {
             interestedSales.value = response.data || []
             console.log(interestedSales.value)
         } catch (error) {
-            console.error('찜 목록 조회 중 오류 발생:', error)
+            // console.error('찜 목록 조회 중 오류 발생:', error)
             interestedSales.value = []
             if (error.response && error.response.status === 204) {
                 // 찜한 매물이 없는 경우
+                console.log('찜한 상품이 없습니다.')
                 return
             }
             // throw new Error('찜 목록을 불러오는데 실패했습니다.')
@@ -37,10 +38,11 @@ export const useUserStore = defineStore('user', () => {
             reservations.value = response.data || [] // null이나 undefined일 경우 빈 배열 할당
             console.log(reservations.value)
         } catch (error) {
-            console.error('예약 목록 조회 중 오류 발생:', error)
+            // console.error('예약 목록 조회 중 오류 발생:', error)
             reservations.value = []
             if (error.response && error.response.status === 204) {
                 // 예약한 매물이 없는 경우
+                console.log('예약한 상품이 없습니다.')
                 return
             }
             // throw new Error('예약 목록을 불러오는데 실패했습니다.')
@@ -75,7 +77,7 @@ export const useUserStore = defineStore('user', () => {
 
             return response.data.isInterest
         } catch (error) {
-            console.error('찜하기 처리 중 오류 발생:', error)
+            // console.error('찜하기 처리 중 오류 발생:', error)
             throw new Error('찜하기 처리 중 오류가 발생했습니다.')
         }
     }
@@ -92,7 +94,7 @@ export const useUserStore = defineStore('user', () => {
             await fetchReservations()
             return true
         } catch (error) {
-            console.error('예약 처리 중 오류 발생:', error)
+            // console.error('예약 처리 중 오류 발생:', error)
             if (error.response && error.response.status === 500) {
                 throw new Error('이미 예약된 매물입니다.')
             }
@@ -114,7 +116,7 @@ export const useUserStore = defineStore('user', () => {
             )
             return true
         } catch (error) {
-            console.error('예약 취소 중 오류 발생:', error)
+            // console.error('예약 취소 중 오류 발생:', error)
             if (error.response && error.response.status === 500) {
                 throw new Error('이미 취소된 예약입니다.')
             }
@@ -133,9 +135,10 @@ export const useUserStore = defineStore('user', () => {
             providerReservations.value = response.data || []
             console.log(providerReservations.value)
         } catch (error) {
-            console.error('판매자 예약 목록 조회 중 오류 발생:', error)
+            // console.error('판매자 예약 목록 조회 중 오류 발생:', error)
             providerReservations.value = []
             if (error.response && error.response.status === 204) {
+                console.log('예약 목록이 없습니다.')
                 return
             }
             // throw new Error('예약 목록을 불러오는데 실패했습니다.')

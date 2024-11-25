@@ -95,7 +95,7 @@ const submitReservation = async (selectedDateTime) => {
         </div>
         <div class="detail-content">
             <div class="image-container">
-                <!-- <img src="/api/placeholder/800/600" alt="매물 상세 이미지" /> -->
+                <img :src="sale.saleImgUrl" alt="sale image" />
             </div>
             <div class="info-section">
                 <div class="price-section">
