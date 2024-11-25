@@ -4,7 +4,6 @@ import { ref, watch } from 'vue'
 import { KakaoMap, KakaoMapMarker } from 'vue3-kakao-maps'
 import { useSaleStore } from '@/stores/sale-store'
 import { storeToRefs } from 'pinia'
-import ProductDetail from '@/components/sale/ProductDetail.vue'
 
 // Pinia store 및 상태 설정
 const saleStore = useSaleStore()
@@ -81,6 +80,7 @@ const updateMapAndFetch = async () => {
         lng: Number(mapCenter.getLng().toFixed(6)),
     }
     zoomLevel.value = map.value.getLevel()
+    console.log(center.value.lat + ' ' + center.value.lng)
 
     // 현재 위치 기준으로 매물 데이터 조회
     await saleStore.fetchSalesByMapCenter(
@@ -188,15 +188,6 @@ const isInfoWindowVisible = (saleId) => {
                 />
             </template>
         </KakaoMap>
-
-        <Transition name="slide">
-            <ProductDetail
-                v-if="selectedSale"
-                :sale="selectedSale"
-                @close="handleCloseDetail"
-                class="map-detail-section"
-            />
-        </Transition>
     </div>
 </template>
 
