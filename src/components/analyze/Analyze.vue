@@ -115,7 +115,36 @@
                         </div>
                     </div>
                     <div v-else class="result-area">
-                        <img :src="activeAnalysis.registeredUrl" alt="Registered Document" />
+
+                        <div class="upper-content">
+                            <div class="upper-content">
+                                <div class="document-preview">
+                                    <div class="document-container">
+                                        <img 
+                                            :src="activeAnalysis[`${activeDocumentType}Url`]" 
+                                            :alt="`${activeDocumentType} Document`"
+                                            class="main-image"
+                                        />
+                                        <img 
+                                            v-if="activeAnalysis[`${activeDocumentType}Score`]"
+                                            :src="`src/assets/${activeAnalysis[`${activeDocumentType}Score`]}.png`"
+                                            :alt="activeAnalysis[`${activeDocumentType}Score`]"
+                                            class="score-image"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="document-summary">
+                                    <div class="summary-box">
+                                        <div class="summary-header">
+                                            <h3>분석 요약</h3>
+                                            <div class="risk-indicator"></div>
+                                        </div>
+                                        <div class="summary-content" v-html="renderMarkdown(activeAnalysis[`${activeDocumentType}Summary`])">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <button
                             v-if="!activeAnalysis.registeredResult"
                             @click="analyzeRegistered"
@@ -407,6 +436,8 @@ const analyzeRegistered = async () => {
         const response = await axios.get(
             `/analyze/${activeAnalysis.value.analyzeId}/registered`
         )
+        activeAnalysis.value.registeredSummary = response.data.summary
+        activeAnalysis.value.registeredScore = response.data.score
         startTypingEffect(response.data.result, 'registered')
     } catch (error) {
         console.error('Error analyzing registered document:', error)
@@ -422,6 +453,8 @@ const analyzeLedger = async () => {
         const response = await axios.get(
             `/analyze/${activeAnalysis.value.analyzeId}/ledger`
         )
+        activeAnalysis.value.ledgerSummary = response.data.summary
+        activeAnalysis.value.ledgerScore = response.data.score
         startTypingEffect(response.data.result, 'ledger')
     } catch (error) {
         console.error('Error analyzing ledger document:', error)
@@ -826,7 +859,7 @@ onMounted(fetchAnalysisList)
 .result-text :deep(ol),
 .result-text :deep(blockquote) {
     margin: 0.5em 0;  /* 여백도 살짝 줄임 */
-    line-height: 0.5;  /* 1.7에서 1.3으로 줄간격 감소 */
+    line-height: 1.7;  /* 1.7에서 1.3으로 줄간격 감소 */
 }
 
 /* 제목 스타일 */
@@ -922,5 +955,67 @@ onMounted(fetchAnalysisList)
     background-color: #4A90E2;
     border-radius: 4px; /* 이것도 맞춰서 수정 */
     transition: width 0.3s ease-out;
+}
+
+.upper-content {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 24px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.document-preview {
+    flex: 0 0 400px; /* 고정 너비 설정 */
+    position: relative;
+}
+
+.document-preview img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.score-badge {
+    position: absolute;
+    top: 8px;
+    right: 250px;
+    z-index: 10;
+}
+
+.score-image {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 150px !important;
+    height: 150px !important;
+    z-index: 10;
+}
+
+.document-summary {
+    flex: 0 0 400px; /* 고정 너비 설정 */
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.document-summary h3 {
+    margin-bottom: 16px;
+    color: #2d3748;
+}
+
+.document-container {
+    width: 400px;
+    position: relative;
+    display: inline-block;
+}
+
+.main-image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border-radius: 4px;
 }
 </style>
