@@ -7,26 +7,26 @@
       <div class="notice-header">
         <h2>부동산 주요 정보</h2>
         <div class="total-count">
-          전체 <strong>{{ notices.length }}</strong>건
+          전체 <strong>{{ notices?.length || 0 }}</strong>건
         </div>
       </div>
   
       <div class="notice-list">
         <div
-          v-for="notice in currentPageNotices"
-          :key="notice.id"
+          v-for="notice in notices"
+          :key="notice.infoNum"
           class="notice-item"
           @click="openModal(notice)"
         >
           <div class="notice-item-left">
-            <span class="notice-number">{{ notice.id }}</span>
+            <span class="notice-number">{{ notice.infoNum }}</span>
             <div class="notice-title-wrapper">
               <span class="notice-title">{{ notice.title }}</span>
-              <span v-if="isNew(notice.date)" class="new-badge">NEW</span>
+              <span v-if="isNew(notice.createdAt)" class="new-badge">NEW</span>
             </div>
           </div>
           <div class="notice-item-right">
-            <span class="notice-date">{{ notice.date }}</span>
+            <span class="notice-date">{{ formatDate(notice.createdAt) }}</span>
             <div class="notice-views">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -58,46 +58,45 @@
         </div>
       </div>
   
-
-<div class="pagination">
-  <button 
-    class="pagination-button" 
-    :class="{ disabled: currentPage === 1 }"
-    @click="goToPage(1)"
-  >
-    &lt;&lt;
-  </button>
-  <button 
-    class="pagination-button"
-    :class="{ disabled: currentPage === 1 }"
-    @click="previousPage"
-  >
-    &lt;
-  </button>
-  <button
-    v-for="page in displayedPages"
-    :key="page"
-    class="pagination-button"
-    :class="{ active: currentPage === page }"
-    @click="goToPage(page)"
-  >
-    {{ page }}
-  </button>
-  <button 
-    class="pagination-button"
-    :class="{ disabled: currentPage === totalPages }"
-    @click="nextPage"
-  >
-    &gt;
-  </button>
-  <button 
-    class="pagination-button"
-    :class="{ disabled: currentPage === totalPages }"
-    @click="goToPage(totalPages)"
-  >
-    &gt;&gt;
-  </button>
-</div>
+      <div class="pagination">
+        <button 
+          class="pagination-button" 
+          :class="{ disabled: currentPage === 1 }"
+          @click="goToFirstPage"
+        >
+          &lt;&lt;
+        </button>
+        <button 
+          class="pagination-button"
+          :class="{ disabled: currentPage === 1 }"
+          @click="previousPage"
+        >
+          &lt;
+        </button>
+        <button
+          v-for="page in displayedPages"
+          :key="page"
+          class="pagination-button"
+          :class="{ active: currentPage === page }"
+          @click="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+        <button 
+          class="pagination-button"
+          :class="{ disabled: currentPage === totalPages }"
+          @click="nextPage"
+        >
+          &gt;
+        </button>
+        <button 
+          class="pagination-button"
+          :class="{ disabled: currentPage === totalPages }"
+          @click="goToLastPage"
+        >
+          &gt;&gt;
+        </button>
+      </div>
   
       <!-- Modal -->
       <div v-if="selectedNotice" class="modal-overlay" @click="closeModal">
@@ -105,7 +104,7 @@
           <div class="modal-header">
             <div class="modal-title-wrapper">
               <h3>{{ selectedNotice.title }}</h3>
-              <span v-if="isNew(selectedNotice.date)" class="new-badge">NEW</span>
+              <span v-if="isNew(selectedNotice.createdAt)" class="new-badge">NEW</span>
             </div>
             <button class="modal-close" @click="closeModal">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -116,7 +115,7 @@
           </div>
           <div class="modal-info">
             <div class="modal-meta">
-              <span>등록일: {{ selectedNotice.date }}</span>
+              <span>등록일: {{ formatDate(selectedNotice.createdAt) }}</span>
               <div class="notice-views">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -155,86 +154,132 @@
         </div>
       </div>
     </div>
-  </template>
+</template>
   
-  <script setup>
-import { ref, computed } from 'vue'
-import Header from "../Header.vue";
+<script setup>
+import { ref, computed, onMounted, inject } from 'vue'
+import Header from "../Header.vue"
 
+const axios = inject('axios')
+const notices = ref([])
 const selectedNotice = ref(null)
+const currentPage = ref(1)
+const totalPages = ref(1)
+const itemsPerPage = 7
+const maxDisplayPages = 5
 
-const openModal = (notice) => {
+// API 호출 함수들
+const fetchTotalPages = async () => {
+  try {
+    const response = await axios.get('/info/num')
+    totalPages.value = response.data.numOfPage
+  } catch (error) {
+    console.error('Error fetching total pages:', error)
+  }
+}
+
+const fetchNotices = async (page) => {
+  try {
+    const response = await axios.get(`/info/page/${page}`)
+    notices.value = response.data.infoList
+  } catch (error) {
+    console.error('Error fetching notices:', error)
+  }
+}
+
+const increaseViews = async (infoNum) => {
+  try {
+    await axios.get(`/info/${infoNum}`)
+  } catch (error) {
+    console.error('Error increasing views:', error)
+  }
+}
+
+// 페이지네이션 관련 함수들
+const displayedPages = computed(() => {
+  const halfDisplay = Math.floor(maxDisplayPages / 2)
+  let start = Math.max(currentPage.value - halfDisplay, 1)
+  let end = Math.min(start + maxDisplayPages - 1, totalPages.value)
+  
+  // 페이지가 끝에 가까울 때 조정
+  if (end - start + 1 < maxDisplayPages) {
+    start = Math.max(1, end - maxDisplayPages + 1)
+  }
+  
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+})
+
+const goToPage = async (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    await fetchNotices(page)
+  }
+}
+
+const goToFirstPage = () => goToPage(1)
+const goToLastPage = () => goToPage(totalPages.value)
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    goToPage(currentPage.value - 1)
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    goToPage(currentPage.value + 1)
+  }
+}
+
+// 모달 관련 함수들
+const openModal = async (notice) => {
   selectedNotice.value = notice
   document.body.style.overflow = 'hidden'
+  await increaseViews(notice.infoNum)
+  // 조회수 증가 후 notices 배열에서 해당 공지사항의 조회수도 업데이트
+  const index = notices.value.findIndex(n => n.infoNum === notice.infoNum)
+  if (index !== -1) {
+    notices.value[index].views += 1
+  }
 }
 
 const closeModal = () => {
   selectedNotice.value = null
   document.body.style.overflow = 'auto'
 }
-  
-  const notices = ref([
-    { id: 535, title: '전세 사기 위험 아파트 목록', date: '2024.10.18', views: 29 },
-    { id: 534, title: '2024년 집주인 융자형 임대주택사업 2차 공고', date: '2024.10.18', views: 112 },
-    { id: 533, title: '한국부동산원 2024 해외사업 동반진출 간담회 참석기업 초청 공지', date: '2024.10.14', views: 186 },
-    { id: 532, title: '2024.6.1기준 공동주택 가격 열람 및 이의신청', date: '2024.09.27', views: 1235 },
-    { id: 531, title: '2024 녹색건축한마당 개최 안내', date: '2024.08.26', views: 650 },
-    { id: 530, title: '2024.6.1기준 공동주택가격(안) 열람 및 의견 제출', date: '2024.08.07', views: 2743 },
-    { id: 529, title: '2024년 공공기관 종합합동평가 대비 관련 개인정보 목적적합성 제3자 제공사항 알림', date: '2024.07.24', views: 985 }
-  ])
-  
-  const currentPage = ref(1)
-  const itemsPerPage = 7
-  const maxDisplayPages = 5
-  
-  const totalPages = computed(() => Math.ceil(notices.value.length / itemsPerPage))
-  
-  const displayedPages = computed(() => {
-    let start = Math.max(1, currentPage.value - Math.floor(maxDisplayPages / 2))
-    let end = Math.min(totalPages.value, start + maxDisplayPages - 1)
-    
-    if (end - start + 1 < maxDisplayPages) {
-      start = Math.max(1, end - maxDisplayPages + 1)
-    }
-    
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i)
-  })
-  
-  const currentPageNotices = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage
-    return notices.value.slice(start, start + itemsPerPage)
-  })
-  
-  const isNew = (date) => {
-    const postDate = new Date(date.replace(/\./g, '-'))
-    const now = new Date()
-    const diffTime = Math.abs(now - postDate)
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return diffDays <= 7
-  }
-  
-  const formatNumber = (num) => {
-    return num.toLocaleString()
-  }
-  
-  const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages.value) {
-      currentPage.value = page
-    }
-  }
-  
-  const previousPage = () => {
-    if (currentPage.value > 1) {
-      currentPage.value--
-    }
-  }
-  
-  const nextPage = () => {
-    if (currentPage.value < totalPages.value) {
-      currentPage.value++
-    }
-  }
-  </script>
+
+// 유틸리티 함수들
+const isNew = (date) => {
+  const postDate = new Date(date)
+  const now = new Date()
+  const diffTime = Math.abs(now - postDate)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  return diffDays <= 7
+}
+
+const formatDate = (dateString) => {
+
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }).format(date)
+}
+
+const formatNumber = (num) => {
+  return num.toLocaleString()
+}
+
+// 컴포넌트 마운트 시 초기 데이터 로드
+onMounted(async () => {
+  await fetchTotalPages()
+  await fetchNotices(1)
+})
+</script>
   
   <style scoped>
   .notice-board {
