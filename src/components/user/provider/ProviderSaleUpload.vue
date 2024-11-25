@@ -69,7 +69,7 @@ const handleSubmit = async () => {
     try {
         await saleStore.uploadSale(saleData.value, imageFile.value)
         alert('매물이 성공적으로 등록되었습니다.')
-        router.push('/provider/sales')
+        router.push('/provider/mypage')
     } catch (e) {
         alert(saleStore.error || '매물 등록에 실패했습니다.')
     }
