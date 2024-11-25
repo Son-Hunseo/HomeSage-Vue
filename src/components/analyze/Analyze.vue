@@ -254,7 +254,78 @@
                         </div>
                     </div>
                     <div v-else class="result-area">
-                        <img :src="activeAnalysis.ledgerUrl" alt="Ledger Document" />
+
+                        <div class="upper-content">
+                            <div class="document-preview">
+                                <div class="document-container">
+                                    <img 
+                                        :src="activeAnalysis.ledgerUrl" 
+                                        alt="Ledger Document"
+                                        class="main-image"
+                                    />
+                                    <img 
+                                        v-if="activeAnalysis.ledgerScore === 'A+'"
+                                        src="@/assets/A+.png"
+                                        alt="A+"
+                                        class="score-image"
+                                    />
+                                    <img 
+                                        v-else-if="activeAnalysis.ledgerScore === 'A'"
+                                        src="@/assets/A.png"
+                                        alt="A"
+                                        class="score-image"
+                                    />
+                                    <img 
+                                        v-else-if="activeAnalysis.ledgerScore === 'B+'"
+                                        src="@/assets/B+.png"
+                                        alt="B+"
+                                        class="score-image"
+                                    />
+                                    <img 
+                                        v-else-if="activeAnalysis.ledgerScore === 'B'"
+                                        src="@/assets/B.png"
+                                        alt="B"
+                                        class="score-image"
+                                    />
+                                    <img 
+                                        v-else-if="activeAnalysis.ledgerScore === 'C+'"
+                                        src="@/assets/C+.png"
+                                        alt="C+"
+                                        class="score-image"
+                                    />
+                                    <img 
+                                        v-else-if="activeAnalysis.ledgerScore === 'C'"
+                                        src="@/assets/C.png"
+                                        alt="C"
+                                        class="score-image"
+                                    />
+                                    <img 
+                                        v-else-if="activeAnalysis.ledgerScore === 'D'"
+                                        src="@/assets/D.png"
+                                        alt="D"
+                                        class="score-image"
+                                    />
+                                    <img 
+                                        v-else-if="activeAnalysis.ledgerScore === 'F'"
+                                        src="@/assets/F.png"
+                                        alt="F"
+                                        class="score-image"
+                                    />
+                                </div>
+                            </div>
+                            <div class="document-summary">
+                                <div class="summary-box">
+                                    <div class="summary-header">
+                                        <h3>분석 요약</h3>
+                                        <div class="risk-indicator"></div>
+                                    </div>
+                                    <div 
+                                        class="summary-content"
+                                        v-html="renderMarkdown(activeAnalysis.ledgerSummary)"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                         <button
                             v-if="!activeAnalysis.ledgerResult"
                             @click="analyzeLedger"
@@ -264,7 +335,7 @@
                             건축물 대장 분석
                         </button>
                         <div 
-                            v-if="(isAnalyzingRegistered && !typingRegistered) || (isAnalyzingLedger && !typingLedger)" 
+                            v-if="isAnalyzingLedger && !typingLedger" 
                             class="analysis-progress"
                         >
                             <div class="progress-container">
@@ -299,7 +370,7 @@
                         ></div>
                     </div>
                 </div>
-            </div>
+                </div>
             <div v-else class="empty-state">
                 <h3>분석을 선택하거나 새로운 분석을 시작하세요</h3>
             </div>
@@ -526,7 +597,6 @@ const analyzeRegistered = async () => {
 
 const analyzeLedger = async () => {
     if (isAnalyzingLedger.value) return
-
     isAnalyzingLedger.value = true
     try {
         const response = await axios.get(
