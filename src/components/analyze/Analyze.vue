@@ -175,7 +175,7 @@
                                         />
                                     </div>
                                 </div>
-                                <div class="document-summary" v-if="showSummary">
+                                <div class="document-summary" v-if="showRegisteredSummary">
                                     <div class="summary-box">
                                         <div class="summary-header">
                                             <h3>분석 요약</h3>
@@ -313,7 +313,7 @@
                                     />
                                 </div>
                             </div>
-                            <div class="document-summary" v-if="showSummary">
+                            <div class="document-summary" v-if="showLedgerSummary">
                                 <div class="summary-box">
                                     <div class="summary-header">
                                         <h3>분석 요약</h3>
@@ -407,8 +407,7 @@ const isCreatingNewAnalysis = ref(false)
 const isComposing = ref(false)
 const isCreating = ref(false)
 
-const typingSummary = ref(null)
-const showSummary = ref(false)
+const showRegisteredSummary = ref(false)
 const typingContent = computed(() => 
     activeDocumentType.value === 'registered' ? typingRegistered.value : typingLedger.value
 )
@@ -520,8 +519,6 @@ const startTypingEffect = (message, type) => {
                 typingLedger.value = null;
                 isAnalyzingLedger.value = false;
             }
-            // 요약을 즉시 표시하도록 처리
-            showSummary.value = true;
         }
     };
 
@@ -530,7 +527,11 @@ const startTypingEffect = (message, type) => {
 
 watch(typingContent, (newValue) => {
     if (!newValue && activeAnalysis.value?.[`${activeDocumentType.value}Result`]) {
-        showSummary.value = true; // 요약은 결과가 완료되면 즉시 보여줌
+        if (activeDocumentType.value === 'registered') {
+            showRegisteredSummary.value = true; // 등기부 등본 요약 표시
+        } else if (activeDocumentType.value === 'ledger') {
+            showLedgerSummary.value = true; // 건축물 대장 요약 표시
+        }
     }
 });
 
