@@ -5,7 +5,6 @@ import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user-store'
 import { useCalendarStore } from '@/stores/calendar-store'
 import { useAuthStore } from '@/stores/auth-store'
-import { useRouter } from 'vue-router'
 import Reserve from './Reserve.vue'
 
 const props = defineProps({
@@ -19,7 +18,6 @@ const emit = defineEmits(['close'])
 const userStore = useUserStore()
 const calendarStore = useCalendarStore()
 const authStore = useAuthStore()
-const router = useRouter()
 const showReserveModal = ref(false)
 
 // 컴포넌트 마운트 시 데이터 로드
@@ -152,7 +150,7 @@ const submitReservation = async (selectedDateTime) => {
                     </div>
                 </div>
 
-                <div class="action-buttons">
+                <div class="action-buttons" v-if="authStore.userRole === 'CONSUMER'">
                     <button
                         class="like-btn"
                         :class="{ active: userStore.isInterested(sale.saleId) }"
