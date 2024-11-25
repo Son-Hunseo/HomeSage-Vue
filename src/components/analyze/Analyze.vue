@@ -124,7 +124,10 @@
                         >
                             등기부 등본 분석
                         </button>
-                        <div v-if="isAnalyzingRegistered || isAnalyzingLedger" class="analysis-progress">
+                        <div 
+                            v-if="(isAnalyzingRegistered && !typingRegistered) || (isAnalyzingLedger && !typingLedger)" 
+                            class="analysis-progress"
+                        >
                             <div class="progress-container">
                                 <transition-group 
                                     name="slide-up" 
@@ -187,7 +190,10 @@
                         >
                             건축물 대장 분석
                         </button>
-                        <div v-if="isAnalyzingRegistered || isAnalyzingLedger" class="analysis-progress">
+                        <div 
+                            v-if="(isAnalyzingRegistered && !typingRegistered) || (isAnalyzingLedger && !typingLedger)" 
+                            class="analysis-progress"
+                        >
                             <div class="progress-container">
                                 <transition-group 
                                     name="slide-up" 
@@ -293,13 +299,20 @@ const stopProgressAnimation = () => {
 }
 
 // 분석 상태 변경 감시
-watch([isAnalyzingRegistered, isAnalyzingLedger], ([newReg, newLedg], [oldReg, oldLedg]) => {
-    if ((!oldReg && !oldLedg) && (newReg || newLedg)) {
-        startProgressAnimation()
-    } else if ((oldReg || oldLedg) && (!newReg && !newLedg)) {
-        stopProgressAnimation()
+// 분석 상태와 타이핑 상태 모두를 감시
+watch([isAnalyzingRegistered, isAnalyzingLedger, typingRegistered, typingLedger], 
+    ([newReg, newLedg, newTypeReg, newTypeLedg], [oldReg, oldLedg, oldTypeReg, oldTypeLedg]) => {
+        // 분석이 시작되고 아직 타이핑이 시작되지 않았을 때 애니메이션 시작
+        if ((!oldReg && !oldLedg) && (newReg || newLedg) && !newTypeReg && !newTypeLedg) {
+            startProgressAnimation()
+        }
+        // 분석이 끝났거나 타이핑이 시작되면 애니메이션 정지
+        if (((oldReg || oldLedg) && (!newReg && !newLedg)) || 
+            (!oldTypeReg && !oldTypeLedg && (newTypeReg || newTypeLedg))) {
+            stopProgressAnimation()
+        }
     }
-})
+)
 
 // 컴포넌트 언마운트 시 타이머 정리
 onUnmounted(() => {
@@ -811,26 +824,40 @@ onMounted(fetchAnalysisList)
 .result-text :deep(p),
 .result-text :deep(ul),
 .result-text :deep(ol),
+.result-text :deep(blockquote) {
+    margin: 0.5em 0;  /* 여백도 살짝 줄임 */
+    line-height: 0.5;  /* 1.7에서 1.3으로 줄간격 감소 */
+}
+
+/* 제목 스타일 */
 .result-text :deep(h1),
 .result-text :deep(h2),
 .result-text :deep(h3),
 .result-text :deep(h4),
 .result-text :deep(h5),
-.result-text :deep(h6),
-.result-text :deep(blockquote) {
-    margin: 0;
-    line-height: 1.5;
+.result-text :deep(h6) {
+    margin: 1em 0 0.5em 0;  /* 여백 조정 */
+    line-height: 1;  /* 제목 줄간격 감소 */
+    font-weight: 600;
 }
 
 .result-text :deep(li) {
-    margin: 0;
-    line-height: 0;
+    margin: 0.3em 0;  /* 리스트 아이템 간격 감소 */
+    line-height: 1;  /* 줄간격 감소 */
 }
 
 .result-text :deep(ul),
 .result-text :deep(ol) {
-    padding-left: 1.5em;
-    margin: 0;
+    padding-left: 2em;
+    margin: 0em 0;  /* 여백 감소 */
+}
+
+.result-text :deep(blockquote) {
+    padding: 0.5em 1em;  /* 안쪽 여백 감소 */
+    border-left: 4px solid #e2e8f0;
+    background-color: #f8fafc;
+    margin: 0.7em 0;
+    line-height: 1;  /* 블록인용구 줄간격도 감소 */
 }
 
 /* Analysis Progress Styles */
