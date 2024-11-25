@@ -254,36 +254,73 @@
                         </div>
                     </div>
                     <div v-else class="result-area">
-                        <img :src="activeAnalysis.ledgerUrl" alt="Ledger Document" />
-                        <button
-                            v-if="!activeAnalysis.ledgerResult"
-                            @click="analyzeLedger"
-                            :disabled="isAnalyzingLedger"
-                            class="analyze-button"
-                        >
-                            건축물 대장 분석
-                        </button>
-                        <div 
-                            v-if="(isAnalyzingRegistered && !typingRegistered) || (isAnalyzingLedger && !typingLedger)" 
-                            class="analysis-progress"
-                        >
-                            <div class="progress-container">
-                                <transition-group 
-                                    name="slide-up" 
-                                    tag="div" 
-                                    class="progress-messages"
-                                >
-                                    <p 
-                                        v-for="(message, index) in analysisMessages" 
-                                        :key="message"
-                                        v-show="currentMessageIndex === index"
-                                        class="progress-message"
-                                    >
-                                        {{ message }}{{ '.'.repeat(dotCount) }}
-                                    </p>
-                                </transition-group>
-                                <div class="progress-bar">
-                                    <div class="progress-bar-fill" :style="{ width: `${progressWidth}%` }"></div>
+                        <div class="upper-content">
+                            <div class="document-preview">
+                                <div class="document-container">
+                                    <img 
+                                        :src="activeAnalysis.ledgerUrl" 
+                                        alt="Ledger Document"
+                                        class="main-image"
+                                    />
+                                    <img 
+                                            v-if="activeAnalysis[`${activeDocumentType}Score`] === 'A+'"
+                                            src="@/assets/A+.png"
+                                            alt="A+"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'A'"
+                                            src="@/assets/A.png"
+                                            alt="A"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'B+'"
+                                            src="@/assets/B+.png"
+                                            alt="B+"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'B'"
+                                            src="@/assets/B.png"
+                                            alt="B"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'C+'"
+                                            src="@/assets/C+.png"
+                                            alt="C+"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'C'"
+                                            src="@/assets/C.png"
+                                            alt="C"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'D'"
+                                            src="@/assets/D.png"
+                                            alt="D"
+                                            class="score-image"
+                                        />
+                                        <img 
+                                            v-else-if="activeAnalysis[`${activeDocumentType}Score`] === 'F'"
+                                            src="@/assets/F.png"
+                                            alt="F"
+                                            class="score-image"
+                                        />
+                                </div>
+                            </div>
+                            <div class="document-summary" v-if="activeAnalysis.ledgerResult || typingLedger">
+                                <div class="summary-box">
+                                    <div class="summary-header">
+                                        <h3>분석 요약</h3>
+                                    </div>
+                                    <div 
+                                        class="summary-content"
+                                        v-html="renderMarkdown(typingSummary?.message || activeAnalysis.ledgerSummary)"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -426,7 +463,7 @@ const renderMarkdown = (text) => {
 }
 
 // 타이핑 효과
-const startTypingEffect = (message, type) => {
+const startTypingEffect = async (message, type) => {
     const typingRef = type === 'registered' ? typingRegistered : typingLedger
     typingRef.value = {
         message: '',
@@ -449,6 +486,11 @@ const startTypingEffect = (message, type) => {
                 typingLedger.value = null
                 isAnalyzingLedger.value = false
             }
+            // 메인 컨텐츠 타이핑 완료 후 요약 시작
+            startSummaryTypingEffect(type === 'registered' ? 
+                activeAnalysis.value.registeredSummary : 
+                activeAnalysis.value.ledgerSummary
+            )
         }
     }
 
@@ -934,42 +976,30 @@ onMounted(fetchAnalysisList)
 }
 
 .result-text :deep(p),
-.result-text :deep(ul),
-.result-text :deep(ol),
 .result-text :deep(blockquote) {
     margin: 0.5em 0;  /* 여백도 살짝 줄임 */
-    line-height: 1.7;  /* 1.7에서 1.3으로 줄간격 감소 */
+    line-height: 1.5;  /* 1.7에서 1.3으로 줄간격 감소 */
 }
 
-/* 제목 스타일 */
+.result-text :deep(ul),
+.result-text :deep(ol),
+.result-text :deep(li),
 .result-text :deep(h1),
 .result-text :deep(h2),
 .result-text :deep(h3),
 .result-text :deep(h4),
 .result-text :deep(h5),
 .result-text :deep(h6) {
-    margin: 1em 0 0.5em 0;  /* 여백 조정 */
-    line-height: 1;  /* 제목 줄간격 감소 */
-    font-weight: 600;
+    line-height: 1;
 }
 
-.result-text :deep(li) {
-    margin: 0.3em 0;  /* 리스트 아이템 간격 감소 */
-    line-height: 1;  /* 줄간격 감소 */
-}
-
-.result-text :deep(ul),
-.result-text :deep(ol) {
-    padding-left: 2em;
-    margin: 0em 0;  /* 여백 감소 */
-}
-
-.result-text :deep(blockquote) {
-    padding: 0.5em 1em;  /* 안쪽 여백 감소 */
-    border-left: 4px solid #e2e8f0;
-    background-color: #f8fafc;
-    margin: 0.7em 0;
-    line-height: 1;  /* 블록인용구 줄간격도 감소 */
+.document-summary :deep(p),
+.document-summary :deep(ul),
+.document-summary :deep(ol),
+.document-summary :deep(li),
+.document-summary :deep(blockquote) {
+    margin: 0.5em 0;  /* 여백도 살짝 줄임 */
+    line-height: 1.7;  /* 1.7에서 1.3으로 줄간격 감소 */
 }
 
 /* Analysis Progress Styles */
