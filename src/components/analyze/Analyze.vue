@@ -60,7 +60,7 @@
             </div>
 
             <!-- Delete Actions -->
-            <div v-if="isDeleteMode" class="delete-actions">  <!-- fixed-bottom 클래스는 필요없음 -->
+            <div v-if="isDeleteMode" class="delete-actions">
                 <button
                     @click="deleteSelectedAnalyses"
                     :disabled="selectedItems.length === 0"
@@ -77,104 +77,115 @@
             <div v-if="activeAnalysis" class="analysis-area">
                 <div class="analysis-header">
                     <h2>{{ activeAnalysis.analyzeName }}</h2>
+                    <div class="document-toggle">
+                        <button 
+                            :class="{ active: activeDocumentType === 'registered' }"
+                            @click="activeDocumentType = 'registered'"
+                            class="toggle-button"
+                        >
+                            등기부 등본
+                        </button>
+                        <button 
+                            :class="{ active: activeDocumentType === 'ledger' }"
+                            @click="activeDocumentType = 'ledger'"
+                            class="toggle-button"
+                        >
+                            건축물 대장
+                        </button>
+                    </div>
                 </div>
 
-                <div class="analysis-grid">
-                    <!-- Document Upload Section -->
-                    <div class="upload-section">
-                        <h3>등기부 등본</h3>
-                        <div
-                            v-if="!activeAnalysis.registeredUrl"
-                            class="upload-area"
-                            @drop.prevent="handleRegisteredDrop"
-                            @dragover.prevent
-                        >
-                            <input
-                                type="file"
-                                ref="registeredInput"
-                                @change="handleRegisteredUpload"
-                                accept=".jpg,.png,.pdf"
-                                style="display: none"
-                            />
-                            <div class="upload-placeholder" @click="triggerRegisteredUpload">
-                                <span class="upload-icon">📄</span>
-                                <span>파일을 드래그하거나 클릭하여 업로드</span>
-                            </div>
-                        </div>
-                        <div v-else class="result-area">
-                            <img :src="activeAnalysis.registeredUrl" alt="Registered Document" />
-                            <button
-                                v-if="!activeAnalysis.registeredResult"
-                                @click="analyzeRegistered"
-                                :disabled="isAnalyzingRegistered"
-                                class="analyze-button"
-                            >
-                                등기부 등본 분석
-                            </button>
-                            <div v-if="isAnalyzingRegistered" class="loading-dots">
-                                <div class="dot"></div>
-                                <div class="dot"></div>
-                                <div class="dot"></div>
-                            </div>
-                            <div
-                                v-if="typingRegistered"
-                                class="result-text typing"
-                                v-html="renderMarkdown(typingRegistered.message)"
-                            ></div>
-                            <div
-                                v-else-if="activeAnalysis.registeredResult"
-                                class="result-text"
-                                v-html="renderMarkdown(activeAnalysis.registeredResult)"
-                            ></div>
+                <div class="upload-section" v-if="activeDocumentType === 'registered'">
+                    <div
+                        v-if="!activeAnalysis.registeredUrl"
+                        class="upload-area"
+                        @drop.prevent="handleRegisteredDrop"
+                        @dragover.prevent
+                    >
+                        <input
+                            type="file"
+                            ref="registeredInput"
+                            @change="handleRegisteredUpload"
+                            accept=".jpg,.png,.pdf"
+                            style="display: none"
+                        />
+                        <div class="upload-placeholder" @click="triggerRegisteredUpload">
+                            <span class="upload-icon">📄</span>
+                            <span>파일을 드래그하거나 클릭하여 업로드</span>
                         </div>
                     </div>
-
-                    <div class="upload-section">
-                        <h3>건축물 대장</h3>
-                        <div
-                            v-if="!activeAnalysis.ledgerUrl"
-                            class="upload-area"
-                            @drop.prevent="handleLedgerDrop"
-                            @dragover.prevent
+                    <div v-else class="result-area">
+                        <img :src="activeAnalysis.registeredUrl" alt="Registered Document" />
+                        <button
+                            v-if="!activeAnalysis.registeredResult"
+                            @click="analyzeRegistered"
+                            :disabled="isAnalyzingRegistered"
+                            class="analyze-button"
                         >
-                            <input
-                                type="file"
-                                ref="ledgerInput"
-                                @change="handleLedgerUpload"
-                                accept=".jpg,.png,.pdf"
-                                style="display: none"
-                            />
-                            <div class="upload-placeholder" @click="triggerLedgerUpload">
-                                <span class="upload-icon">📄</span>
-                                <span>파일을 드래그하거나 클릭하여 업로드</span>
-                            </div>
+                            등기부 등본 분석
+                        </button>
+                        <div v-if="isAnalyzingRegistered" class="loading-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
                         </div>
-                        <div v-else class="result-area">
-                            <img :src="activeAnalysis.ledgerUrl" alt="Ledger Document" />
-                            <button
-                                v-if="!activeAnalysis.ledgerResult"
-                                @click="analyzeLedger"
-                                :disabled="isAnalyzingLedger"
-                                class="analyze-button"
-                            >
-                                건축물 대장 분석
-                            </button>
-                            <div v-if="isAnalyzingLedger" class="loading-dots">
-                                <div class="dot"></div>
-                                <div class="dot"></div>
-                                <div class="dot"></div>
-                            </div>
-                            <div
-                                v-if="typingLedger"
-                                class="result-text typing"
-                                v-html="renderMarkdown(typingLedger.message)"
-                            ></div>
-                            <div
-                                v-else-if="activeAnalysis.ledgerResult"
-                                class="result-text"
-                                v-html="renderMarkdown(activeAnalysis.ledgerResult)"
-                            ></div>
+                        <div
+                            v-if="typingRegistered"
+                            class="result-text typing"
+                            v-html="renderMarkdown(typingRegistered.message)"
+                        ></div>
+                        <div
+                            v-else-if="activeAnalysis.registeredResult"
+                            class="result-text"
+                            v-html="renderMarkdown(activeAnalysis.registeredResult)"
+                        ></div>
+                    </div>
+                </div>
+
+                <div class="upload-section" v-if="activeDocumentType === 'ledger'">
+                    <div
+                        v-if="!activeAnalysis.ledgerUrl"
+                        class="upload-area"
+                        @drop.prevent="handleLedgerDrop"
+                        @dragover.prevent
+                    >
+                        <input
+                            type="file"
+                            ref="ledgerInput"
+                            @change="handleLedgerUpload"
+                            accept=".jpg,.png,.pdf"
+                            style="display: none"
+                        />
+                        <div class="upload-placeholder" @click="triggerLedgerUpload">
+                            <span class="upload-icon">📄</span>
+                            <span>파일을 드래그하거나 클릭하여 업로드</span>
                         </div>
+                    </div>
+                    <div v-else class="result-area">
+                        <img :src="activeAnalysis.ledgerUrl" alt="Ledger Document" />
+                        <button
+                            v-if="!activeAnalysis.ledgerResult"
+                            @click="analyzeLedger"
+                            :disabled="isAnalyzingLedger"
+                            class="analyze-button"
+                        >
+                            건축물 대장 분석
+                        </button>
+                        <div v-if="isAnalyzingLedger" class="loading-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <div
+                            v-if="typingLedger"
+                            class="result-text typing"
+                            v-html="renderMarkdown(typingLedger.message)"
+                        ></div>
+                        <div
+                            v-else-if="activeAnalysis.ledgerResult"
+                            class="result-text"
+                            v-html="renderMarkdown(activeAnalysis.ledgerResult)"
+                        ></div>
                     </div>
                 </div>
             </div>
@@ -197,6 +208,7 @@ const analysisList = ref([])
 const activeAnalysis = ref(null)
 const isDeleteMode = ref(false)
 const selectedItems = ref([])
+const activeDocumentType = ref('registered') // 새로 추가된 상태
 
 const registeredInput = ref(null)
 const ledgerInput = ref(null)
@@ -210,7 +222,6 @@ const typingLedger = ref(null)
 // 새로운 상태 변수들
 const newAnalysisName = ref('')
 const isCreatingNewAnalysis = ref(false)
-
 const isComposing = ref(false)
 const isCreating = ref(false)
 
@@ -250,7 +261,6 @@ const startTypingEffect = (message, type) => {
             currentIndex++
             setTimeout(typeNextCharacter, 30)
         } else {
-            // 타이핑 완료 시 결과 저장 및 상태 초기화
             if (type === 'registered') {
                 activeAnalysis.value.registeredResult = typingRef.value.fullMessage
                 typingRegistered.value = null
@@ -285,7 +295,6 @@ const createNewAnalysis = async () => {
         analysisList.value.push(response.data)
         await selectAnalysis(response.data)
 
-        // Reset creation state
         isCreatingNewAnalysis.value = false
         newAnalysisName.value = ''
     } catch (error) {
@@ -302,7 +311,7 @@ const analyzeRegistered = async () => {
     isAnalyzingRegistered.value = true
     try {
         const response = await axios.get(
-            `/analyze/${activeAnalysis.value.analyzeId}/registered`,
+            `/analyze/${activeAnalysis.value.analyzeId}/registered`
         )
         startTypingEffect(response.data.result, 'registered')
     } catch (error) {
@@ -317,7 +326,7 @@ const analyzeLedger = async () => {
     isAnalyzingLedger.value = true
     try {
         const response = await axios.get(
-            `/analyze/${activeAnalysis.value.analyzeId}/ledger`,
+            `/analyze/${activeAnalysis.value.analyzeId}/ledger`
         )
         startTypingEffect(response.data.result, 'ledger')
     } catch (error) {
@@ -326,7 +335,6 @@ const analyzeLedger = async () => {
     }
 }
 
-// 파일 업로드 관련 함수들
 const fetchAnalysisList = async () => {
     try {
         const response = await axios.get('/analyze')
@@ -357,7 +365,7 @@ const deleteSelectedAnalyses = async () => {
     try {
         await Promise.all(selectedItems.value.map((id) => axios.delete(`/analyze/${id}`)))
         analysisList.value = analysisList.value.filter(
-            (analysis) => !selectedItems.value.includes(analysis.analyzeId),
+            (analysis) => !selectedItems.value.includes(analysis.analyzeId)
         )
         toggleDeleteMode()
     } catch (error) {
@@ -414,7 +422,6 @@ const uploadFile = async (file, type) => {
                 'Content-Type': 'multipart/form-data',
             },
         })
-        // Refresh analysis data after upload
         await selectAnalysis(activeAnalysis.value)
     } catch (error) {
         console.error(`Error uploading ${type} file:`, error)
@@ -427,7 +434,7 @@ onMounted(fetchAnalysisList)
 <style scoped>
 .app-container {
     display: flex;
-    height: calc(100vh - 100px); /* 헤더 높이(64px) + 테두리(1px) + 패딩(8px) 제외 */
+    height: calc(100vh - 100px);
     background-color: #f0f2f5;
     margin-top: 1px;
 }
@@ -438,6 +445,7 @@ onMounted(fetchAnalysisList)
     border-right: 1px solid #e0e0e0;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .sidebar-header {
@@ -471,8 +479,8 @@ onMounted(fetchAnalysisList)
 
 .item-content {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
 }
 
 .item-icon {
@@ -483,18 +491,8 @@ onMounted(fetchAnalysisList)
     font-weight: 500;
 }
 
-.item-stats {
-    display: flex;
-    gap: 12px;
-    font-size: 0.9em;
-    color: #666;
-}
-
 .new-analysis {
     border: 2px dashed #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .plus-icon {
@@ -513,29 +511,45 @@ onMounted(fetchAnalysisList)
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 24px;
+}
+
+.document-toggle {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 1px;
+    background: #e0e0e0;
+    padding: 1px;
+    border-radius: 8px;
+    margin-top: 16px;
 }
 
-.progress-indicator {
-    background: #e8f5e9;
-    color: #2e7d32;
-    padding: 8px 16px;
-    border-radius: 16px;
+.toggle-button {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    background: white;
+    cursor: pointer;
     font-weight: 500;
+    transition: all 0.2s;
 }
 
-.analysis-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+.toggle-button:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.toggle-button:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.toggle-button.active {
+    background: #4A90E2;
+    color: white;
 }
 
 .upload-section {
     background: white;
     border-radius: 8px;
     padding: 20px;
+    min-height: calc(100vh - 300px);
 }
 
 .upload-area {
@@ -570,11 +584,11 @@ onMounted(fetchAnalysisList)
 
 .result-area img {
     width: 100%;
-    max-width: 400px; /* 최대 너비 제한 */
+    max-width: 400px;
     height: auto;
     border-radius: 4px;
     margin-bottom: 16px;
-    display: block; /* 이미지 중앙 정렬을 위해 */
+    display: block;
     margin-left: auto;
     margin-right: auto;
 }
@@ -584,8 +598,8 @@ onMounted(fetchAnalysisList)
     padding: 16px;
     border-radius: 4px;
     white-space: pre-wrap;
-    line-height: 1.7; /* 줄간격 조정 */
-    font-size: 14px; /* 폰트 크기 조정 */
+    line-height: 1.7;
+    font-size: 14px;
 }
 
 .delete-mode-button {
@@ -605,8 +619,13 @@ onMounted(fetchAnalysisList)
 .delete-actions {
     padding: 16px;
     border-top: 1px solid #e0e0e0;
+    background: white;
     display: flex;
     gap: 8px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 .delete-button {
@@ -646,7 +665,7 @@ onMounted(fetchAnalysisList)
     margin-top: 16px;
     width: 100%;
     padding: 12px;
-    background-color: #8b4513;
+    background-color: #4A90E2;
     color: white;
     border: none;
     border-radius: 8px;
@@ -669,7 +688,7 @@ onMounted(fetchAnalysisList)
 .dot {
     width: 8px;
     height: 8px;
-    background-color: #8b4513;
+    background-color: #255584;
     border-radius: 50%;
     animation: bounce 0.8s infinite;
 }
@@ -677,13 +696,13 @@ onMounted(fetchAnalysisList)
 .dot:nth-child(2) {
     animation-delay: 0.2s;
 }
+
 .dot:nth-child(3) {
     animation-delay: 0.4s;
 }
 
 @keyframes bounce {
-    0%,
-    100% {
+    0%, 100% {
         transform: translateY(0);
     }
     50% {
@@ -693,27 +712,6 @@ onMounted(fetchAnalysisList)
 
 .typing {
     opacity: 0.8;
-}
-
-/* 나머지 기존 스타일은 유지 */
-
-.analysis-item {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.analysis-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.item-content {
-    display: flex;
 }
 
 .new-analysis-input {
@@ -726,10 +724,9 @@ onMounted(fetchAnalysisList)
 
 .new-analysis-input:focus {
     outline: none;
-    border-color: #8b4513;
+    border-color: #255584;
 }
 
-/* 마크다운 요소들의 스타일 통일 */
 .result-text :deep(p),
 .result-text :deep(ul),
 .result-text :deep(ol),
@@ -741,7 +738,7 @@ onMounted(fetchAnalysisList)
 .result-text :deep(h6),
 .result-text :deep(blockquote) {
     margin: 0;
-    line-height: 1.7;
+    line-height: 0;
 }
 
 .result-text :deep(li) {
@@ -749,25 +746,9 @@ onMounted(fetchAnalysisList)
     line-height: 1.7;
 }
 
-/* 리스트 패딩 조정 */
 .result-text :deep(ul),
 .result-text :deep(ol) {
     padding-left: 1.5em;
     margin: 0;
 }
-
-.sidebar {
-    position: relative; /* 추가 */
-}
-
-.sidebar .delete-actions {
-    position: fixed;
-    bottom: 0;
-    width: 300px;
-    background: white;
-    z-index: 10;
-    border-top: 1px solid #e0e0e0;
-}
-
-
 </style>
