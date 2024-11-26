@@ -187,6 +187,7 @@ const submitReservation = async (selectedDateTime) => {
         <!-- 예약 모달 -->
         <Reserve
             :show="showReserveModal"
+            :saleId="sale.saleId"
             @close="showReserveModal = false"
             @submit="submitReservation"
         />
