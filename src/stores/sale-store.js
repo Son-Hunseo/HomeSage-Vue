@@ -119,6 +119,7 @@ export const useSaleStore = defineStore('saleStore', () => {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                withCredentials: true,
             })
 
             return true
