@@ -408,6 +408,7 @@ const isComposing = ref(false)
 const isCreating = ref(false)
 
 const showRegisteredSummary = ref(false)
+const showLedgerSummary = fef(false)
 const typingContent = computed(() => 
     activeDocumentType.value === 'registered' ? typingRegistered.value : typingLedger.value
 )
@@ -512,10 +513,12 @@ const startTypingEffect = (message, type) => {
         } else {
             if (type === 'registered') {
                 activeAnalysis.value.registeredResult = typingRef.value.fullMessage;
+                showRegisteredSummary.value = true; // 등록 결과가 완료되면 요약 표시
                 typingRegistered.value = null;
                 isAnalyzingRegistered.value = false;
             } else {
                 activeAnalysis.value.ledgerResult = typingRef.value.fullMessage;
+                showLedgerSummary.value = true; // 건축물 대장 결과가 완료되면 요약 표시
                 typingLedger.value = null;
                 isAnalyzingLedger.value = false;
             }
@@ -613,6 +616,9 @@ const selectAnalysis = async (analysis) => {
             ...analysis,
             ...response.data,
         }
+
+        showRegisteredSummary.value = !!response.data.registeredResult
+        showLedgerSummary.value = !!response.data.ledgerResult
     } catch (error) {
         console.error('Error selecting analysis:', error)
     }
