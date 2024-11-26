@@ -408,7 +408,7 @@ const isComposing = ref(false)
 const isCreating = ref(false)
 
 const showRegisteredSummary = ref(false)
-const showLedgerSummary = fef(false)
+const showLedgerSummary = ref(false)
 const typingContent = computed(() => 
     activeDocumentType.value === 'registered' ? typingRegistered.value : typingLedger.value
 )
